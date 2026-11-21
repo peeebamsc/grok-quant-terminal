@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GROK QUANT — Paper Terminal (SIMULATED)</title>
+<style>
+  :root {
+    --bg: #05070a;
+    --panel: rgba(10, 14, 20, 0.92);
+    --panel-2: #0e141c;
+    --line: #243041;
+    --text: #e8eef6;
+    --dim: #8b98a8;
+    --faint: #5b6776;
+    --cyan: #3ee0c4;
+    --blue: #7aa2ff;
+    --amber: #ffb020;
+    --red: #ff4d5a;
+    --ok: #2ee6a6;
+    --violet: #c084fc;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); }
+  body { overflow: hidden; }
+  #stage { position: absolute; inset: 0; z-index: 0; }
+  #stage canvas { display: block; width: 100%; height: 100%; }
+  #labels { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+  .nlab {
+    position: absolute; transform: translate(-50%, -120%);
+    white-space: nowrap; text-align: center; pointer-events: none;
+    text-shadow: 0 2px 10px #000;
+  }
+  .nlab .id { font-family: var(--mono); font-weight: 800; font-size: 13px; letter-spacing: 0.08em; }
+  .nlab .role { font-size: 10px; color: var(--dim); letter-spacing: 0.04em; }
+  .nlab .st {
+    display: inline-block; margin-top: 3px; font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px;
+    border: 1px solid currentColor; background: rgba(0,0,0,0.55);
+  }
+  .hud { position: absolute; inset: 0; z-index: 2; display: grid; grid-template-rows: auto auto auto 1fr auto auto; pointer-events: none; }
+  .hud > * { pointer-events: auto; }
+  .banner {
+    background: #3a0d12;
+    border-bottom: 1px solid #ff4d5a99;
+    color: #ffd0d4;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 8px 12px;
+  }
+  header.top {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px;
+    padding: 8px 14px 6px;
+    background: linear-gradient(180deg, rgba(5,7,10,0.96), rgba(5,7,10,0.55));
+  }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .logo {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, #7aa2ff, #3ee0c4);
+    color: #071018; font-weight: 800; font-family: var(--mono); font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .brand h1 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
+  .brand p { margin: 0; font-size: 11px; color: var(--dim); }
+  .clockbox { text-align: right; }
+  .clock { font-family: var(--mono); font-size: 15px; font-weight: 700; letter-spacing: 0.04em; color: var(--cyan); }
+  .clock-sub { font-size: 10px; color: var(--faint); letter-spacing: 0.08em; text-transform: uppercase; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; }
+  .pill {
+    font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    border-radius: 999px; padding: 4px 9px; border: 1px solid var(--amber);
+    background: #ffb02018; color: var(--amber);
+  }
+  .pill.off { border-color: #ff4d5a88; color: #ff8a90; background: #ff4d5a18; }
+  .status-strip {
+    display: flex; flex-wrap: wrap; gap: 6px 0; align-items: center;
+    padding: 6px 14px 8px;
+    background: linear-gradient(180deg, rgba(5,7,10,0.5), rgba(5,7,10,0.15));
+    font-size: 11px;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--line); background: #0e141c; border-radius: 999px;
+    padding: 4px 9px; margin-right: 6px; color: var(--text);
+  }
+  .chip b { font-weight: 700; }
+  .chip .k { color: var(--dim); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .chip.draft { border-color: #ffb02066; }
+  .chip.ok { border-color: #2ee6a633; }
+  .hash {
+    font-family: var(--mono); color: var(--cyan); cursor: help; border-bottom: 1px dotted #3ee0c488;
+    position: relative;
+  }
+  .hash .tip {
+    display: none; position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
+    background: #0b1016; border: 1px solid var(--cyan); color: var(--cyan);
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0; padding: 6px 8px; border-radius: 8px;
+    white-space: nowrap; z-index: 9; box-shadow: 0 8px 24px #000c;
+  }
+  .hash:hover .tip, .hash:focus .tip { display: block; }
+  .verified { margin-left: auto; color: var(--ok); font-size: 10px; letter-spacing: 0.06em; }
+  .dock { position: relative; min-height: 0; pointer-events: none !important; }
+  .hint {
+    position: absolute; left: 14px; top: 6px;
+    font-family: var(--mono); font-size: 10px; color: var(--faint);
+  }
+  .board {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) minmax(280px, 1.2fr) minmax(240px, 1fr);
+    gap: 10px;
+    padding: 0 12px 8px;
+    min-height: 0;
+    background: linear-gradient(180deg, rgba(5,7,10,0), rgba(5,7,10,0.88) 16%);
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+    backdrop-filter: blur(10px);
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    max-height: 34vh;
+  }
+  .label {
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim);
+    font-weight: 700; margin-bottom: 8px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: center;
+  }
+  .eqgrid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  .eqcard { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 9px; }
+  .eqcard .hd { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .eqcard .name { font-size: 13px; font-weight: 700; }
+  .eqcard .amt { font-family: var(--mono); font-size: 15px; font-weight: 700; }
+  .eqcard .sub { font-size: 10px; color: var(--faint); margin-top: 2px; }
+  .eqcard svg { display: block; width: 100%; height: 36px; margin-top: 4px; }
+  .tag { font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; color: var(--amber); }
+  .pos-empty { color: var(--dim); font-size: 13px; padding: 10px 0 6px; }
+  .toggle {
+    font: inherit; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+    color: var(--text); background: #121922; border: 1px solid var(--line); border-radius: 999px;
+    padding: 4px 8px; cursor: pointer;
+  }
+  .toggle.on { border-color: var(--amber); color: var(--amber); }
+  .demo-row {
+    border-top: 1px solid var(--line); padding: 8px 0; font-size: 12px;
+    display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center;
+  }
+  .badge {
+    font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+    border-radius: 6px; padding: 2px 6px; color: var(--amber);
+    background: #ffb02018; border: 1px solid #ffb02066;
+  }
+  .ledger { font-family: var(--mono); font-size: 11px; line-height: 1.35; }
+  .lev {
+    border-top: 1px solid var(--line); padding: 6px 0;
+    display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start;
+  }
+  .lev:first-child { border-top: 0; }
+  .seq { color: var(--faint); }
+  .lev .typ { color: var(--cyan); }
+  .lev .hx { color: var(--faint); font-size: 10px; word-break: break-all; }
+  .risk-rows { display: grid; gap: 6px; font-size: 12px; }
+  .rr { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; }
+  .rr span:first-child { white-space: nowrap; color: var(--dim); }
+  .rr span:last-child { font-family: var(--mono); font-weight: 700; white-space: nowrap; }
+  .kill {
+    margin-top: 8px; border: 1px solid #2ee6a655; background: #0b1a14;
+    border-radius: 10px; padding: 10px; display: flex; align-items: center; gap: 12px;
+  }
+  .kill .lamp {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--ok); box-shadow: 0 0 12px #2ee6a6aa; flex: none;
+  }
+  .kill .kl { font-family: var(--mono); font-size: 16px; font-weight: 800; letter-spacing: 0.16em; color: var(--ok); }
+  .kill .kd { font-size: 11px; color: var(--dim); }
+  footer.foot {
+    padding: 6px 14px 8px;
+    background: rgba(5,7,10,0.96);
+    border-top: 1px solid var(--line);
+    font-size: 11px; color: var(--faint); line-height: 1.45;
+  }
+  footer.foot strong { color: var(--amber); }
+  #boot-err {
+    display: none; position: absolute; left: 16px; right: 16px; bottom: 90px; z-index: 6;
+    background: #3a0d12; border: 1px solid var(--red); color: #ffd0d4;
+    padding: 10px 12px; border-radius: 10px; font-size: 13px;
+  }
+  @media (max-width: 980px) {
+    body { overflow: auto; }
+    .hud { position: relative; display: flex; flex-direction: column; min-height: 100%; }
+    #stage { position: relative; height: 360px; }
+    #labels { position: absolute; height: 360px; }
+    .board { grid-template-columns: 1fr; }
+    .panel { max-height: none; }
+    .dock { min-height: 0; height: 0; }
+    .verified { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div id="stage" aria-label="Simulated 3D view of five MVP agent nodes and three pod equity ribbons"></div>
+<div id="labels"></div>
+<div id="boot-err"></div>
+<div class="hud">
+  <div class="banner">PAPER ONLY. NO LIVE DATA. ALL VALUES SIMULATED.</div>
+  <header class="top">
+    <div class="brand">
+      <div class="logo">GQ</div>
+      <div>
+        <h1>GROK QUANT Paper Terminal</h1>
+        <p>MVP agents 00 · 06 · 07 · 08 · 11 &nbsp;·&nbsp; BTC-USD 1h pods A–C &nbsp;·&nbsp; in-browser SIMULATED state</p>
+      </div>
+    </div>
+    <div class="clockbox">
+      <div class="clock" id="ct-clock">—</div>
+      <div class="clock-sub">America/Chicago (CT)</div>
+    </div>
+    <div class="pills">
+      <span class="pill">SIMULATED</span>
+      <span class="pill off">LIVE TRADING OFF</span>
+    </div>
+  </header>
+  <div class="status-strip" title="VERIFIED per owner briefing 2026-11-20">
+    <span class="chip draft"><span class="k">Criteria v1</span> <b>DRAFT NOT FROZEN</b></span>
+    <span class="chip">
+      <span class="k">hash</span>
+      <span class="hash" tabindex="0" title="68edd8c1ada67774538f64527438c2fffebd2127f3dc14afbbed76b9bdfec683">68edd8c1…ec683<span class="tip">68edd8c1ada67774538f64527438c2fffebd2127f3dc14afbbed76b9bdfec683</span></span>
+    </span>
+    <span class="chip ok"><span class="k">pytest</span> <b>34 passed</b></span>
+    <span class="chip ok"><span class="k">false-promotion</span> <b>0/20</b></span>
+    <span class="chip ok"><span class="k">holdout</span> <b>sealed</b></span>
+    <span class="chip ok"><span class="k">bars</span> <b>17,690</b></span>
+    <span class="verified">VERIFIED per owner briefing 2026-11-20</span>
+  </div>
+  <div class="dock"><div class="hint">Drag to orbit · scroll to zoom · five MVP nodes with SIMULATED message traffic · three pod ribbons (baseline, no edge claimed)</div></div>
+  <div class="board">
+    <section class="panel" id="eq-panel"></section>
+    <section class="panel">
+      <div class="label">
+        <span>Open positions</span>
+        <button type="button" class="toggle" id="demo-toggle" aria-pressed="false">Demo off</button>
+      </div>
+      <div id="pos-body"></div>
+    </section>
+    <section class="panel">
+      <div class="label"><span>Hash-chained ledger</span><span class="tag">SHA-256 · SIMULATED</span></div>
+      <div class="ledger" id="ledger"></div>
+    </section>
+    <section class="panel" id="risk-panel" style="grid-column: 1 / -1; max-height: none;">
+      <div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:stretch;">
+        <div>
+          <div class="label"><span>Risk limits</span><span class="tag">PAPER BOOK · SIMULATED</span></div>
+          <div class="risk-rows" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+            <div class="rr"><span>Per trade</span><span>0.5% of equity</span></div>
+            <div class="rr"><span>Daily loss cap</span><span>2%</span></div>
+            <div class="rr"><span>Drawdown kill</span><span>10% · owner-reset</span></div>
+            <div class="rr"><span>Direction</span><span>Spot long-only</span></div>
+            <div class="rr"><span>Leverage</span><span>1x</span></div>
+          </div>
+        </div>
+        <div class="kill" title="10% drawdown kill is not triggered. Only the owner can reset it if it fires.">
+          <div class="lamp" aria-hidden="true"></div>
+          <div>
+            <div class="kl">KILL</div>
+            <div class="kd">INACTIVE · 10% DD · owner-reset · not triggered</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <footer class="foot">
+    PAPER only — no live broker, no real money, no live market feed. All agent traffic, ledger events, and pod equity paths are SIMULATED in this browser until a real paper-state feed is wired in.
+    <strong>PROPOSED next step:</strong> Agent 11 publishes a JSON status endpoint this terminal can poll.
+  </footer>
+</div>
+<script>
+window.__gqErrors = [];
+window.__gqWarns = [];
+(function () {
+  function rec(arr, kind, args) {
+    var s = kind + ": " + Array.prototype.map.call(args, function (x) { return String(x); }).join(" ");
+    arr.push(s);
+  }
+  var oe = console.error, ow = console.warn;
+  console.error = function () { rec(window.__gqErrors, "console.error", arguments); return oe.apply(console, arguments); };
+  console.warn = function () { rec(window.__gqWarns, "console.warn", arguments); return ow.apply(console, arguments); };
+})();
+window.addEventListener("error", function (e) {
+  window.__gqErrors.push("window.error: " + String((e && e.message) || e) + (e && e.filename ? " @" + e.filename + ":" + e.lineno : ""));
+});
+window.addEventListener("unhandledrejection", function (e) {
+  window.__gqErrors.push("unhandledrejection: " + String((e && e.reason) || e));
+});
+</script>
+<script src="./vendor/three.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var CRITERIA_HASH = "68edd8c1ada67774538f64527438c2fffebd2127f3dc14afbbed76b9bdfec683";
+  var AGENTS = [
+    { id: "00", role: "Chief of Staff", status: "COORDINATING", color: 0x7aa2ff, hex: "#7aa2ff", pos: [0, 3.25, -0.35] },
+    { id: "06", role: "Quant Research", status: "BASELINE", color: 0x3ee0c4, hex: "#3ee0c4", pos: [-2.25, 2.05, 0.25] },
+    { id: "07", role: "Risk Officer", status: "MONITORING", color: 0xffb020, hex: "#ffb020", pos: [-1.15, 2.0, 0.85] },
+    { id: "08", role: "Execution", status: "IDLE · NO FILLS", color: 0xc084fc, hex: "#c084fc", pos: [2.25, 2.05, 0.25] },
+    { id: "11", role: "Infra/Security", status: "SEALS OK", color: 0x94a3b8, hex: "#94a3b8", pos: [1.15, 1.95, -1.05] }
+  ];
+  var LINKS = [
+    [0, 1, "STATUS"],
+    [0, 2, "STATUS"],
+    [0, 3, "STATUS"],
+    [0, 4, "STATUS"],
+    [1, 2, "SIGNAL"],
+    [2, 3, "RISK GATE"],
+    [3, 0, "FLAT"],
+    [4, 0, "HEARTBEAT"],
+    [4, 3, "INTEGRITY"]
+  ];
+  var PODS = [
+    { id: "A", name: "Pod A — Trend", method: "EMA trend", seed: 0xA01, color: "#7aa2ff", tcolor: 0x7aa2ff },
+    { id: "B", name: "Pod B — Mean-rev", method: "RSI mean-reversion", seed: 0xB02, color: "#3ee0c4", tcolor: 0x3ee0c4 },
+    { id: "C", name: "Pod C — Breakout", method: "ATR breakout", seed: 0xC03, color: "#c084fc", tcolor: 0xc084fc }
+  ];
+
+  function mulberry32(a) {
+    return function () {
+      var t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function seededWalk(seed, n, start) {
+    var r = mulberry32(seed);
+    var eq = [start];
+    var i, u, v, z, ret;
+    for (i = 1; i < n; i++) {
+      u = Math.max(r(), 1e-12);
+      v = r();
+      z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+      ret = z * 0.0016;
+      eq.push(Math.max(92, Math.min(108, eq[i - 1] * (1 + ret))));
+    }
+    return eq;
+  }
+  PODS.forEach(function (p) { p.equity = seededWalk(p.seed, 96, 100); });
+
+  /* SHA-256 (sync, works on file://). Public-domain compact implementation. */
+  function sha256hex(msg) {
+    var K = [
+      0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+      0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+      0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+      0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+      0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+      0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+      0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+      0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+    ];
+    function rotr(x, n) { return (x >>> n) | (x << (32 - n)); }
+    var bytes = new TextEncoder().encode(msg);
+    var l = bytes.length;
+    var withPad = ((l + 9 + 63) >> 6) << 6;
+    var buf = new Uint8Array(withPad);
+    buf.set(bytes);
+    buf[l] = 0x80;
+    var dv = new DataView(buf.buffer);
+    var bitHi = Math.floor((l * 8) / 0x100000000);
+    var bitLo = (l * 8) >>> 0;
+    dv.setUint32(withPad - 8, bitHi, false);
+    dv.setUint32(withPad - 4, bitLo, false);
+    var h0=0x6a09e667,h1=0xbb67ae85,h2=0x3c6ef372,h3=0xa54ff53a,h4=0x510e527f,h5=0x9b05688c,h6=0x1f83d9ab,h7=0x5be0cd19;
+    var w = new Uint32Array(64);
+    var i, j, a,b,c,d,e,f,g,h,s0,s1,ch,maj,t1,t2;
+    for (i = 0; i < withPad; i += 64) {
+      for (j = 0; j < 16; j++) w[j] = dv.getUint32(i + j * 4, false);
+      for (j = 16; j < 64; j++) {
+        s0 = rotr(w[j-15],7) ^ rotr(w[j-15],18) ^ (w[j-15]>>>3);
+        s1 = rotr(w[j-2],17) ^ rotr(w[j-2],19) ^ (w[j-2]>>>10);
+        w[j] = (w[j-16] + s0 + w[j-7] + s1) >>> 0;
+      }
+      a=h0;b=h1;c=h2;d=h3;e=h4;f=h5;g=h6;h=h7;
+      for (j = 0; j < 64; j++) {
+        s1 = rotr(e,6) ^ rotr(e,11) ^ rotr(e,25);
+        ch = (e & f) ^ ((~e) & g);
+        t1 = (h + s1 + ch + K[j] + w[j]) >>> 0;
+        s0 = rotr(a,2) ^ rotr(a,13) ^ rotr(a,22);
+        maj = (a & b) ^ (a & c) ^ (b & c);
+        t2 = (s0 + maj) >>> 0;
+        h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;
+      }
+      h0=(h0+a)>>>0;h1=(h1+b)>>>0;h2=(h2+c)>>>0;h3=(h3+d)>>>0;
+      h4=(h4+e)>>>0;h5=(h5+f)>>>0;h6=(h6+g)>>>0;h7=(h7+h)>>>0;
+    }
+    return [h0,h1,h2,h3,h4,h5,h6,h7].map(function (x) { return x.toString(16).padStart(8, "0"); }).join("");
+  }
+  function shortHash(h) { return h.slice(0, 8) + "…" + h.slice(-6); }
+
+  var ledger = [];
+  var prevHash = "0".repeat(64);
+  var seq = 0;
+  function appendLedger(type, detail) {
+    seq += 1;
+    var payload = JSON.stringify({
+      seq: seq,
+      type: type,
+      detail: detail,
+      simulated: true,
+      ts_ct: ctStamp()
+    });
+    var material = prevHash + "\n" + payload;
+    var hash = sha256hex(material);
+    var ev = { seq: seq, type: type, detail: detail, ts: ctStamp(), prev: prevHash, hash: hash, payload: payload };
+    ledger.push(ev);
+    prevHash = hash;
+    if (ledger.length > 40) ledger.shift();
+    renderLedger();
+    return ev;
+  }
+
+  function ctParts(d) {
+    d = d || new Date();
+    var fmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Chicago",
+      weekday: "short", year: "numeric", month: "short", day: "2-digit",
+      hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true
+    });
+    return fmt.format(d) + " CT";
+  }
+  function ctStamp(d) {
+    d = d || new Date();
+    var f = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Chicago",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hour12: false
+    });
+    var p = {};
+    f.formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
+    return p.year + "-" + p.month + "-" + p.day + " " + p.hour + ":" + p.minute + ":" + p.second + " CT";
+  }
+  function tickClock() {
+    var el = document.getElementById("ct-clock");
+    if (el) el.textContent = ctParts();
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  function usd(v) {
+    return "$" + Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function spark(eq, color) {
+    var W = 240, H = 36, i, d, x, y, lo = 99, hi = 101;
+    for (i = 0; i < eq.length; i++) { if (eq[i] < lo) lo = eq[i]; if (eq[i] > hi) hi = eq[i]; }
+    d = "";
+    for (i = 0; i < eq.length; i++) {
+      x = (i / (eq.length - 1)) * W;
+      y = 4 + (1 - (eq[i] - lo) / (hi - lo)) * (H - 8);
+      d += (i ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1);
+    }
+    var y0 = 4 + (1 - (100 - lo) / (hi - lo)) * (H - 8);
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+      '<line x1="0" x2="' + W + '" y1="' + y0.toFixed(1) + '" y2="' + y0.toFixed(1) + '" stroke="#5b6776" stroke-dasharray="3 3" />' +
+      '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="1.8" />' +
+      "</svg>";
+  }
+
+  function renderEquity() {
+    var html = '<div class="label"><span>Pod equity · BTC-USD 1h</span><span class="tag">SIMULATED · baseline, no edge claimed</span></div><div class="eqgrid">';
+    PODS.forEach(function (p) {
+      var last = p.equity[p.equity.length - 1];
+      var chg = last - 100;
+      var col = chg >= 0 ? "var(--ok)" : "var(--red)";
+      html += '<div class="eqcard">' +
+        '<div class="hd"><span class="name">' + p.name + '</span><span class="amt" style="color:' + col + '">' + usd(last) + '</span></div>' +
+        '<div class="sub">' + p.method + ' · BTC-USD 1h · start $100.00 · seeded random walk · SIMULATED · baseline, no edge claimed</div>' +
+        spark(p.equity, p.color) +
+        "</div>";
+    });
+    html += "</div>";
+    document.getElementById("eq-panel").innerHTML = html;
+  }
+
+  var demoOn = false;
+  function renderPositions() {
+    var body = document.getElementById("pos-body");
+    if (!demoOn) {
+      body.innerHTML = '<div class="pos-empty">No open paper positions</div>' +
+        '<div class="sub" style="font-size:11px;color:var(--faint)">Paper book is flat. Execution (08) is idle. No live data.</div>';
+      return;
+    }
+    body.innerHTML = '<div class="demo-row">' +
+      '<span class="badge">SIMULATED DEMO</span>' +
+      '<span>BTC-USD · long · qty 0.001</span>' +
+      '<span style="font-family:var(--mono)">demo entry 100000 · notional $100</span>' +
+      '<span style="flex-basis:100%;font-size:11px;color:var(--faint)">Optional layout demo only — not a paper fill, not live data, not a real position. Toggle off to return to the actual (flat) paper book.</span>' +
+      "</div>";
+  }
+  document.getElementById("demo-toggle").addEventListener("click", function () {
+    demoOn = !demoOn;
+    this.classList.toggle("on", demoOn);
+    this.setAttribute("aria-pressed", demoOn ? "true" : "false");
+    this.textContent = demoOn ? "Demo on" : "Demo off";
+    renderPositions();
+    appendLedger("DEMO_TOGGLE", demoOn ? "simulated demo positions shown (not a paper fill)" : "demo off; no open paper positions");
+  });
+
+  function renderLedger() {
+    var el = document.getElementById("ledger");
+    var rows = ledger.slice(-10).reverse();
+    el.innerHTML = rows.map(function (ev) {
+      return '<div class="lev"><div class="seq">#' + ev.seq + '</div><div>' +
+        '<div><span class="typ">' + ev.type + '</span> · ' + ev.detail + '</div>' +
+        '<div class="hx">' + ev.ts + ' · prev ' + shortHash(ev.prev) + ' · sha256 ' + shortHash(ev.hash) + '</div>' +
+        "</div></div>";
+    }).join("");
+  }
+
+  appendLedger("BOOT", "in-browser SIMULATED terminal; no live feed");
+  appendLedger("CRITERIA", "v1 DRAFT NOT FROZEN hash " + CRITERIA_HASH.slice(0, 8) + "…");
+  appendLedger("RISK_LIMITS", "0.5% per trade / 2% daily / 10% DD kill / spot long-only / 1x");
+  appendLedger("POSITIONS", "No open paper positions");
+  appendLedger("HOLDING", "holdout sealed; 17690 bars; pytest 34 passed; false-promotion 0/20");
+  AGENTS.forEach(function (a) {
+    appendLedger("AGENT_" + a.id, a.role + " status " + a.status + " (SIMULATED)");
+  });
+
+  var msgIdx = 0;
+  var MSG_CYCLE = [
+    ["06", "07", "SIGNAL", "pod A/B/C baseline; no edge claimed"],
+    ["07", "08", "RISK GATE", "no ORDER_REQUEST; book is flat"],
+    ["08", "00", "FLAT", "No open paper positions"],
+    ["11", "00", "HEARTBEAT", "seals + integrity ok (SIMULATED)"],
+    ["00", "06", "STATUS", "coordinate pods A–C BTC-USD 1h"],
+    ["11", "07", "INTEGRITY", "ledger chain extended (SIMULATED)"]
+  ];
+  setInterval(function () {
+    var m = MSG_CYCLE[msgIdx % MSG_CYCLE.length];
+    msgIdx += 1;
+    appendLedger("MSG_" + m[0] + "_" + m[1], m[2] + " · " + m[3]);
+  }, 2800);
+
+  renderEquity();
+  renderPositions();
+
+  function showErr(msg) {
+    var el = document.getElementById("boot-err");
+    el.style.display = "block";
+    el.textContent = msg;
+    window.__gqErrors.push(msg);
+  }
+
+  function init3d() {
+    if (typeof THREE === "undefined") {
+      showErr("three.js failed to load from ./vendor/three.min.js. HUD still works; all values remain SIMULATED.");
+      return;
+    }
+    var mount = document.getElementById("stage");
+    var labelRoot = document.getElementById("labels");
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x05070a);
+    scene.fog = new THREE.FogExp2(0x05070a, 0.045);
+    var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    mount.appendChild(renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0x6b7c93, 0.7));
+    var key = new THREE.PointLight(0x7aa2ff, 35, 50);
+    key.position.set(-6, 10, 8);
+    scene.add(key);
+    var fill = new THREE.PointLight(0x3ee0c4, 18, 40);
+    fill.position.set(8, 6, -4);
+    scene.add(fill);
+
+    var grid = new THREE.GridHelper(70, 70, 0x243041, 0x121820);
+    scene.add(grid);
+
+    var i, j, pGeo = new THREE.BufferGeometry();
+    var pCount = 280;
+    var pPos = new Float32Array(pCount * 3);
+    for (i = 0; i < pCount; i++) {
+      pPos[i * 3] = (Math.random() - 0.5) * 50;
+      pPos[i * 3 + 1] = Math.random() * 14 + 0.3;
+      pPos[i * 3 + 2] = (Math.random() - 0.5) * 50;
+    }
+    pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
+    var particles = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x7aa2ff, size: 0.05, transparent: true, opacity: 0.45 }));
+    scene.add(particles);
+
+    var nodeGroup = new THREE.Group();
+    scene.add(nodeGroup);
+    var nodeMeshes = [];
+    var htmlLabels = [];
+
+    function makeLabel(agent) {
+      var d = document.createElement("div");
+      d.className = "nlab";
+      d.innerHTML = '<div class="id" style="color:' + agent.hex + '">' + agent.id + '</div>' +
+        '<div class="role">' + agent.role + '</div>' +
+        '<div class="st" style="color:' + agent.hex + '">' + agent.status + ' · SIMULATED</div>';
+      labelRoot.appendChild(d);
+      return d;
+    }
+
+    AGENTS.forEach(function (a, idx) {
+      var group = new THREE.Group();
+      group.position.set(a.pos[0], a.pos[1], a.pos[2]);
+      var core = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.42, 1),
+        new THREE.MeshStandardMaterial({ color: a.color, emissive: a.color, emissiveIntensity: 0.55, metalness: 0.2, roughness: 0.35 })
+      );
+      var halo = new THREE.Mesh(
+        new THREE.SphereGeometry(0.7, 24, 24),
+        new THREE.MeshBasicMaterial({ color: a.color, transparent: true, opacity: 0.12, depthWrite: false })
+      );
+      var ring = new THREE.Mesh(
+        new THREE.TorusGeometry(0.85, 0.025, 8, 40),
+        new THREE.MeshBasicMaterial({ color: a.color, transparent: true, opacity: 0.7 })
+      );
+      ring.rotation.x = Math.PI / 2;
+      group.add(core); group.add(halo); group.add(ring);
+      nodeGroup.add(group);
+      nodeMeshes.push({ agent: a, group: group, ring: ring, core: core });
+      htmlLabels.push({ agent: a, el: makeLabel(a), world: group.position });
+    });
+
+    var linkCurves = [];
+    LINKS.forEach(function (L) {
+      var a = new THREE.Vector3().fromArray(AGENTS[L[0]].pos);
+      var b = new THREE.Vector3().fromArray(AGENTS[L[1]].pos);
+      var mid = a.clone().add(b).multiplyScalar(0.5);
+      mid.y += 0.6;
+      var curve = new THREE.QuadraticBezierCurve3(a, mid, b);
+      var geo = new THREE.TubeGeometry(curve, 24, 0.018, 6, false);
+      var mat = new THREE.MeshBasicMaterial({ color: 0x3a4a60, transparent: true, opacity: 0.7 });
+      nodeGroup.add(new THREE.Mesh(geo, mat));
+      linkCurves.push({ curve: curve, label: L[2], color: AGENTS[L[0]].color });
+    });
+
+    var packets = [];
+    function spawnPacket(link) {
+      var mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.08, 10, 10),
+        new THREE.MeshBasicMaterial({ color: link.color })
+      );
+      nodeGroup.add(mesh);
+      packets.push({ mesh: mesh, curve: link.curve, t: 0, speed: 0.18 + Math.random() * 0.18 });
+    }
+    var spawnClock = 0;
+
+    /* Three equity ribbons, in front of the agent graph. */
+    var ribGroup = new THREE.Group();
+    ribGroup.position.set(0, 1.55, -2.15);
+    scene.add(ribGroup);
+    PODS.forEach(function (pod, pi) {
+      var pts = [];
+      var eq = pod.equity;
+      var z = (pi - 1) * 0.55;
+      for (i = 0; i < eq.length; i++) {
+        var x = -4.6 + (i / (eq.length - 1)) * 9.2;
+        var y = (eq[i] - 100) * 0.35 + 0.35;
+        pts.push(new THREE.Vector3(x, y, z));
+      }
+      var curve = new THREE.CatmullRomCurve3(pts);
+      var tube = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 80, 0.045, 8, false),
+        new THREE.MeshStandardMaterial({ color: pod.tcolor, emissive: pod.tcolor, emissiveIntensity: 0.7, roughness: 0.3 })
+      );
+      ribGroup.add(tube);
+    });
+    var baseline = new THREE.Mesh(
+      new THREE.BoxGeometry(9.4, 0.01, 1.4),
+      new THREE.MeshBasicMaterial({ color: 0x5b6776, transparent: true, opacity: 0.35 })
+    );
+    baseline.position.y = 0.35;
+    ribGroup.add(baseline);
+
+    var target = new THREE.Vector3(0, 2.35, 0);
+    var sph = { theta: 0.0, phi: 1.12, r: 10.2 };
+    function applyCam() {
+      camera.position.set(
+        target.x + sph.r * Math.sin(sph.phi) * Math.sin(sph.theta),
+        target.y + sph.r * Math.cos(sph.phi),
+        target.z + sph.r * Math.sin(sph.phi) * Math.cos(sph.theta)
+      );
+      camera.lookAt(target);
+    }
+    var dragging = false, lx = 0, ly = 0, auto = true;
+    var el = renderer.domElement;
+    el.style.touchAction = "none";
+    el.addEventListener("pointerdown", function (e) {
+      dragging = true; auto = false; lx = e.clientX; ly = e.clientY; el.setPointerCapture(e.pointerId);
+    });
+    el.addEventListener("pointerup", function () { dragging = false; });
+    el.addEventListener("pointermove", function (e) {
+      if (!dragging) return;
+      sph.theta -= (e.clientX - lx) * 0.005;
+      sph.phi = Math.max(0.3, Math.min(1.35, sph.phi - (e.clientY - ly) * 0.005));
+      lx = e.clientX; ly = e.clientY;
+    });
+    el.addEventListener("wheel", function (e) {
+      e.preventDefault();
+      auto = false;
+      sph.r = Math.max(7, Math.min(22, sph.r + e.deltaY * 0.012));
+    }, { passive: false });
+
+    function resize() {
+      var w = mount.clientWidth || window.innerWidth;
+      var h = mount.clientHeight || window.innerHeight;
+      camera.aspect = w / Math.max(h, 1);
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h, false);
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    var tmp = new THREE.Vector3();
+    function placeLabels() {
+      var w = mount.clientWidth || window.innerWidth;
+      var h = mount.clientHeight || window.innerHeight;
+      htmlLabels.forEach(function (lab) {
+        tmp.copy(lab.world);
+        tmp.y += 0.55;
+        tmp.project(camera);
+        var sx = (tmp.x * 0.5 + 0.5) * w;
+        var sy = (-tmp.y * 0.5 + 0.5) * h;
+        if (tmp.z > 1 || sy > h * 0.58) { lab.el.style.display = "none"; return; }
+        lab.el.style.display = "block";
+        lab.el.style.left = sx + "px";
+        lab.el.style.top = sy + "px";
+      });
+    }
+
+    var last = performance.now();
+    function tick(now) {
+      var dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      if (auto) sph.theta += dt * 0.035;
+      particles.rotation.y += dt * 0.015;
+      for (i = 0; i < nodeMeshes.length; i++) {
+        nodeMeshes[i].ring.rotation.z += dt * 0.6;
+        nodeMeshes[i].group.position.y = AGENTS[i].pos[1] + Math.sin(now * 0.0015 + i) * 0.06;
+      }
+      spawnClock += dt;
+      if (spawnClock > 0.45 && packets.length < 14) {
+        spawnClock = 0;
+        spawnPacket(linkCurves[Math.floor(Math.random() * linkCurves.length)]);
+      }
+      for (i = packets.length - 1; i >= 0; i--) {
+        packets[i].t += packets[i].speed * dt;
+        if (packets[i].t >= 1) {
+          nodeGroup.remove(packets[i].mesh);
+          packets[i].mesh.geometry.dispose();
+          packets[i].mesh.material.dispose();
+          packets.splice(i, 1);
+        } else {
+          packets[i].curve.getPoint(packets[i].t, tmp);
+          packets[i].mesh.position.copy(tmp);
+        }
+      }
+      applyCam();
+      placeLabels();
+      renderer.render(scene, camera);
+      requestAnimationFrame(tick);
+    }
+    applyCam();
+    requestAnimationFrame(tick);
+  }
+
+  if (document.readyState === "complete") init3d();
+  else window.addEventListener("load", init3d);
+})();
+</script>
+</body>
+</html>
