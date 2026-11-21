@@ -250,11 +250,39 @@
     body { overflow: auto; }
     .hud { position: relative; display: flex; flex-direction: column; min-height: 100%; }
     #stage { position: relative; height: 360px; }
-    #labels { position: absolute; height: 360px; }
+    #labels { position: absolute; left: 0; top: 0; width: 100%; height: 360px; }
     .board { grid-template-columns: 1fr; }
     .panel { max-height: none; }
     .dock { min-height: 0; height: 0; }
     .verified { margin-left: 0; }
+  }
+  @media (max-width: 600px) {
+    .banner { font-size: 10px; letter-spacing: 0.06em; padding: 6px 8px; line-height: 1.35; }
+    .feed-flag { font-size: 10px; letter-spacing: 0.06em; padding: 5px 8px; }
+    header.top { padding: 8px 10px 6px; align-items: flex-start; }
+    .brand h1 { font-size: 15px; }
+    .brand p { font-size: 10px; line-height: 1.35; }
+    .logo { width: 28px; height: 28px; font-size: 11px; border-radius: 8px; }
+    .clock { font-size: 13px; }
+    .pills { justify-content: flex-start; }
+    .status-strip { padding: 6px 10px 8px; gap: 5px; }
+    .chip { padding: 3px 7px; margin-right: 0; }
+    .verified { margin-left: 0; flex-basis: 100%; }
+    .hint { left: 8px; right: 8px; font-size: 9px; white-space: normal; max-width: calc(100% - 16px); }
+    .board { padding: 0 10px 8px; }
+    footer.foot { padding: 6px 10px 10px; }
+    #stage, #labels { height: 300px; }
+    .nlab .id { font-size: 11px; }
+    .nlab .role { font-size: 8px; }
+    body.narrow .nlab .role { display: none; }
+    body.narrow .nlab .st {
+      width: 8px; height: 8px; padding: 0; overflow: hidden;
+      border-radius: 50%; font-size: 0; line-height: 0; letter-spacing: 0;
+      color: transparent; border-width: 2px; margin-top: 3px;
+    }
+    .hint { display: none; }
+    .rr span:first-child, .rr span:last-child { white-space: normal; }
+    .hash .tip { left: 0; transform: none; white-space: normal; max-width: 70vw; word-break: break-all; }
   }
 </style>
 </head>
@@ -685,6 +713,7 @@ window.addEventListener("unhandledrejection", function (e) {
       d.innerHTML = '<div class="id" style="color:' + agent.hex + '">' + agent.id + '</div>' +
         '<div class="role">' + agent.role + '</div>' +
         '<div class="st" style="color:' + agent.hex + '">' + agent.status + ' · SIMULATED</div>';
+      d.title = agent.id + " · " + agent.role + " · " + agent.status + " · SIMULATED";
       labelRoot.appendChild(d);
       return d;
     }
@@ -708,7 +737,7 @@ window.addEventListener("unhandledrejection", function (e) {
       group.add(core); group.add(halo); group.add(ring);
       nodeGroup.add(group);
       nodeMeshes.push({ agent: a, group: group, ring: ring, core: core });
-      htmlLabels.push({ agent: a, el: makeLabel(a), world: group.position });
+      htmlLabels.push({ agent: a, el: makeLabel(a), world: group.position, group: group });
     });
 
     var linkCurves = [];
@@ -767,7 +796,8 @@ window.addEventListener("unhandledrejection", function (e) {
     ribGroup.add(baseline);
 
     var target = new THREE.Vector3(0, 2.35, 0);
-    var sph = { theta: 0.0, phi: 1.12, r: 10.2 };
+    var narrow = (mount.clientWidth || window.innerWidth) < 600;
+    var sph = { theta: 0.0, phi: 1.12, r: narrow ? 13 : 10.2 };
     function applyCam() {
       camera.position.set(
         target.x + sph.r * Math.sin(sph.phi) * Math.sin(sph.theta),
@@ -798,6 +828,16 @@ window.addEventListener("unhandledrejection", function (e) {
     function resize() {
       var w = mount.clientWidth || window.innerWidth;
       var h = mount.clientHeight || window.innerHeight;
+      var nowNarrow = w < 600;
+      if (nowNarrow !== narrow && auto) sph.r = nowNarrow ? 13 : 10.2;
+      narrow = nowNarrow;
+      document.body.classList.toggle("narrow", narrow);
+      nodeGroup.scale.set(narrow ? 1.65 : 1, 1, 1);
+      bookGroup.position.set(0, narrow ? 0.2 : 0.85, narrow ? 1.75 : 1.25);
+      bookGroup.scale.setScalar(narrow ? 0.82 : 1);
+      ribGroup.scale.set(narrow ? 0.72 : 1, narrow ? 0.72 : 1, narrow ? 0.72 : 1);
+      ribGroup.position.set(0, narrow ? 0.9 : 1.55, narrow ? -1.6 : -2.15);
+      camera.fov = narrow ? 58 : 42;
       camera.aspect = w / Math.max(h, 1);
       camera.updateProjectionMatrix();
       renderer.setSize(w, h, false);
@@ -809,16 +849,42 @@ window.addEventListener("unhandledrejection", function (e) {
     function placeLabels() {
       var w = mount.clientWidth || window.innerWidth;
       var h = mount.clientHeight || window.innerHeight;
+      var placed = [];
+      var cutoff = narrow ? 0.92 : 0.58;
       htmlLabels.forEach(function (lab) {
-        tmp.copy(lab.world);
+        if (lab.group && lab.group.getWorldPosition) lab.group.getWorldPosition(tmp);
+        else tmp.copy(lab.world);
         tmp.y += 0.55;
         tmp.project(camera);
         var sx = (tmp.x * 0.5 + 0.5) * w;
         var sy = (-tmp.y * 0.5 + 0.5) * h;
-        if (tmp.z > 1 || sy > h * 0.58) { lab.el.style.display = "none"; return; }
+        if (tmp.z > 1 || sy > h * cutoff || sx < -40 || sx > w + 40) { lab.el.style.display = "none"; return; }
         lab.el.style.display = "block";
-        lab.el.style.left = sx + "px";
-        lab.el.style.top = sy + "px";
+        placed.push({ lab: lab, sx: sx, sy: sy });
+      });
+      if (narrow && placed.length > 1) {
+        var minDx = 52, minDy = 30;
+        placed.sort(function (a, b) { return a.sx - b.sx; });
+        var a, b, n;
+        for (n = 0; n < 4; n++) {
+          for (a = 1; a < placed.length; a++) {
+            for (b = 0; b < a; b++) {
+              if (Math.abs(placed[a].sx - placed[b].sx) < minDx && Math.abs(placed[a].sy - placed[b].sy) < minDy) {
+                var push = (minDy - Math.abs(placed[a].sy - placed[b].sy)) / 2 + 3;
+                if (placed[a].sy >= placed[b].sy) { placed[a].sy += push; placed[b].sy -= push; }
+                else { placed[a].sy -= push; placed[b].sy += push; }
+              }
+            }
+          }
+        }
+        for (a = 0; a < placed.length; a++) {
+          placed[a].sy = Math.max(14, Math.min(h - 14, placed[a].sy));
+          placed[a].sx = Math.max(36, Math.min(w - 36, placed[a].sx));
+        }
+      }
+      placed.forEach(function (p) {
+        p.lab.el.style.left = p.sx + "px";
+        p.lab.el.style.top = p.sy + "px";
       });
     }
 
@@ -884,12 +950,14 @@ window.addEventListener("unhandledrejection", function (e) {
         if (live) {
           st.textContent = "UNAVAILABLE";
           st.style.color = "#94a3b8";
+          lab.el.title = lab.agent.id + " · " + lab.agent.role + " · UNAVAILABLE";
           core.material.color.setHex(0x66707a);
           core.material.emissive.setHex(0x334047);
           core.material.emissiveIntensity = 0.2;
         } else {
           st.textContent = AGENTS[ix].status + " · SIMULATED";
           st.style.color = AGENTS[ix].hex;
+          lab.el.title = AGENTS[ix].id + " · " + AGENTS[ix].role + " · " + AGENTS[ix].status + " · SIMULATED";
           core.material.color.setHex(AGENTS[ix].color);
           core.material.emissive.setHex(AGENTS[ix].color);
           core.material.emissiveIntensity = 0.55;
@@ -1358,7 +1426,7 @@ window.addEventListener("unhandledrejection", function (e) {
       '<div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:stretch;">' +
       "<div>" +
       '<div class="label"><span>Risk limits</span><span class="tag keepcase" id="risk-tag">VERIFIED · paper ledger</span></div>' +
-      '<div class="risk-rows" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">' +
+      '<div class="risk-rows" style="grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));">' +
       '<div class="rr" title="' + (risk.per_trade_rule || "") + '"><span>Per trade</span><span>' + (risk.per_trade_pct != null ? risk.per_trade_pct + "% / $" + (risk.per_trade_usd != null ? risk.per_trade_usd : "") : "—") + "</span></div>" +
       '<div class="rr"><span>Daily loss cap</span><span>' + (risk.daily_loss_pct != null ? risk.daily_loss_pct + "%" : "—") + "</span></div>" +
       '<div class="rr"><span>Weekly loss cap</span><span>' + (risk.weekly_loss_pct != null ? risk.weekly_loss_pct + "%" : "—") + "</span></div>" +
