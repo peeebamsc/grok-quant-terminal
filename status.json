@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-21T00:17:09-06:00",
-  "generated_at_utc": "2026-11-21T06:17:09+00:00",
-  "data_hash": "b1db05df2414320b2689d28f874f7952fb26c2201439e62cdad71dcee9687c9b",
+  "generated_at": "2026-11-21T00:32:17-06:00",
+  "generated_at_utc": "2026-11-21T06:32:17+00:00",
+  "data_hash": "fa10839d33e173b982f5c40faf5181df27ff426cdba04a433365b857446416ce",
   "data_hash_of": "sha256 of canonical JSON of every field except generated_at*/data_hash*",
   "schema_version": "1.0",
   "paper_only": true,
@@ -40,8 +40,8 @@
       "id": "scheduler",
       "name": "paper-cycle scheduler (process, not an LLM agent)",
       "status": "running",
-      "last_heartbeat": "2026-11-21T06:16:49+00:00",
-      "last_heartbeat_ct": "2026-11-21T00:16:49-06:00",
+      "last_heartbeat": "2026-11-21T06:31:57+00:00",
+      "last_heartbeat_ct": "2026-11-21T00:31:57-06:00",
       "heartbeat_age_s": 20,
       "provenance": {
         "status": "VERIFIED",
@@ -52,8 +52,8 @@
       "id": "paper_cycle",
       "name": "deterministic paper trading cycle (no LLM)",
       "status": "ok",
-      "last_heartbeat": "2026-11-21T06:17:06+00:00",
-      "last_heartbeat_ct": "2026-11-21T00:17:06-06:00",
+      "last_heartbeat": "2026-11-21T06:32:14+00:00",
+      "last_heartbeat_ct": "2026-11-21T00:32:14-06:00",
       "provenance": {
         "status": "VERIFIED",
         "last_heartbeat": "VERIFIED"
@@ -68,7 +68,7 @@
       "role": "champion",
       "status": "ACTIVE",
       "equity_usd": 100.0,
-      "equity_as_of": "2026-11-21T06:17:04+00:00",
+      "equity_as_of": "2026-11-21T06:32:13+00:00",
       "start_usd": 100.0,
       "peak_usd": 100.0,
       "dd_pct": 0.0,
@@ -94,7 +94,7 @@
       "role": "challenger",
       "status": "ACTIVE",
       "equity_usd": 100.0,
-      "equity_as_of": "2026-11-21T06:17:04+00:00",
+      "equity_as_of": "2026-11-21T06:32:13+00:00",
       "start_usd": 100.0,
       "peak_usd": 100.0,
       "dd_pct": 0.0,
@@ -120,7 +120,7 @@
       "role": "research_shadow",
       "status": "ACTIVE",
       "equity_usd": 100.0,
-      "equity_as_of": "2026-11-21T06:17:04+00:00",
+      "equity_as_of": "2026-11-21T06:32:13+00:00",
       "start_usd": 100.0,
       "peak_usd": 100.0,
       "dd_pct": 0.0,
@@ -146,7 +146,7 @@
       "role": "research_shadow",
       "status": "ACTIVE",
       "equity_usd": 100.0,
-      "equity_as_of": "2026-11-21T06:17:06+00:00",
+      "equity_as_of": "2026-11-21T06:32:14+00:00",
       "start_usd": 100.0,
       "peak_usd": 100.0,
       "dd_pct": 0.0,
@@ -172,7 +172,7 @@
       "role": "research_shadow",
       "status": "ACTIVE",
       "equity_usd": 100.0,
-      "equity_as_of": "2026-11-21T06:17:06+00:00",
+      "equity_as_of": "2026-11-21T06:32:14+00:00",
       "start_usd": 100.0,
       "peak_usd": 100.0,
       "dd_pct": 0.0,
@@ -198,7 +198,7 @@
       "role": "research_shadow",
       "status": "ACTIVE",
       "equity_usd": 100.0,
-      "equity_as_of": "2026-11-21T06:17:06+00:00",
+      "equity_as_of": "2026-11-21T06:32:14+00:00",
       "start_usd": 100.0,
       "peak_usd": 100.0,
       "dd_pct": 0.0,
@@ -224,7 +224,7 @@
       "role": "research_shadow",
       "status": "ACTIVE",
       "equity_usd": 100.0,
-      "equity_as_of": "2026-11-21T06:17:06+00:00",
+      "equity_as_of": "2026-11-21T06:32:14+00:00",
       "start_usd": 100.0,
       "peak_usd": 100.0,
       "dd_pct": 0.0,
@@ -250,7 +250,7 @@
       "role": "research_shadow",
       "status": "ACTIVE",
       "equity_usd": 100.0,
-      "equity_as_of": "2026-11-21T06:17:06+00:00",
+      "equity_as_of": "2026-11-21T06:32:14+00:00",
       "start_usd": 100.0,
       "peak_usd": 100.0,
       "dd_pct": 0.0,
@@ -276,7 +276,7 @@
       "role": "research_shadow",
       "status": "ACTIVE",
       "equity_usd": 97.7767,
-      "equity_as_of": "2026-11-21T06:17:06+00:00",
+      "equity_as_of": "2026-11-21T06:32:14+00:00",
       "start_usd": 100.0,
       "peak_usd": 100.0,
       "dd_pct": 2.223,
@@ -317,7 +317,7 @@
       "role": "research_shadow",
       "status": "ACTIVE",
       "equity_usd": 99.3687,
-      "equity_as_of": "2026-11-21T06:17:06+00:00",
+      "equity_as_of": "2026-11-21T06:32:14+00:00",
       "start_usd": 100.0,
       "peak_usd": 100.0,
       "dd_pct": 0.631,
@@ -441,9 +441,9 @@
   },
   "ledger": {
     "ok": true,
-    "records": 40,
-    "head_seq": 40,
-    "head_hash": "f1d484aa1fec24fccd51477c8bcf867c4f1a7f290895fd56ee86d4a82371378d",
+    "records": 46,
+    "head_seq": 46,
+    "head_hash": "1b18a6c4e06e039661b07f873dbee63d4c0d81605969bf8053874aa2726db6cf",
     "first_break": null,
     "provenance": {
       "ok": "VERIFIED",
@@ -452,48 +452,6 @@
     }
   },
   "ledger_tail": [
-    {
-      "seq": 29,
-      "ts": "2026-11-21T06:02:18+00:00",
-      "event": "provider:cross_check:-:BTC-USD",
-      "prev_hash": "45ac9bc06a7aea5585d47b4a34f186e37367da6a3d281ce33d39acca57277c51",
-      "hash": "eaa408aa9313dcd4a64d1eb34ef730dd02ca03f94dc666606116a9c70e660770"
-    },
-    {
-      "seq": 30,
-      "ts": "2026-11-21T06:02:18+00:00",
-      "event": "provider:fetch_ok:coinbase:PAXG-USD",
-      "prev_hash": "eaa408aa9313dcd4a64d1eb34ef730dd02ca03f94dc666606116a9c70e660770",
-      "hash": "ea1d18769f90ab521e66d475ff5d08c3ff22f3b01d430ca311b9bb6ebb4caaba"
-    },
-    {
-      "seq": 31,
-      "ts": "2026-11-21T06:02:18+00:00",
-      "event": "snapshot:coinbase:PAXG-USD",
-      "prev_hash": "ea1d18769f90ab521e66d475ff5d08c3ff22f3b01d430ca311b9bb6ebb4caaba",
-      "hash": "1c29030d1294ffbb410bc846272273fef326faeaeaa5d375a2a89d799816a4d3"
-    },
-    {
-      "seq": 32,
-      "ts": "2026-11-21T06:02:19+00:00",
-      "event": "provider:cross_check:-:PAXG-USD",
-      "prev_hash": "1c29030d1294ffbb410bc846272273fef326faeaeaa5d375a2a89d799816a4d3",
-      "hash": "cb4e8be55d1c8b8ed9ce8d20aaec3adb77211167c8064be5944111cc0a637f01"
-    },
-    {
-      "seq": 33,
-      "ts": "2026-11-21T06:06:47+00:00",
-      "event": "integrity_update",
-      "prev_hash": "cb4e8be55d1c8b8ed9ce8d20aaec3adb77211167c8064be5944111cc0a637f01",
-      "hash": "2647a829ed058f279b742d8b6e5e372a4f6eef4da204d85298d9d35c1c5ad375"
-    },
-    {
-      "seq": 34,
-      "ts": "2026-11-21T06:06:58+00:00",
-      "event": "integrity_update",
-      "prev_hash": "2647a829ed058f279b742d8b6e5e372a4f6eef4da204d85298d9d35c1c5ad375",
-      "hash": "1eba9d36b2b688e3ef7de1b8fa77a23c29483778ed1b50d21a282972e2d3d24f"
-    },
     {
       "seq": 35,
       "ts": "2026-11-21T06:17:07+00:00",
@@ -535,6 +493,48 @@
       "event": "provider:cross_check:-:PAXG-USD",
       "prev_hash": "906c3ce515c2792c92b7f65710cd0d4828a18ac7466a4853fa27feaf4aa6e5e2",
       "hash": "f1d484aa1fec24fccd51477c8bcf867c4f1a7f290895fd56ee86d4a82371378d"
+    },
+    {
+      "seq": 41,
+      "ts": "2026-11-21T06:32:15+00:00",
+      "event": "provider:fetch_ok:coinbase:BTC-USD",
+      "prev_hash": "f1d484aa1fec24fccd51477c8bcf867c4f1a7f290895fd56ee86d4a82371378d",
+      "hash": "297bcf167a29e84d5dae3e67bdf303c40cb2827975ce4bbd8eb0e007cf0760e0"
+    },
+    {
+      "seq": 42,
+      "ts": "2026-11-21T06:32:15+00:00",
+      "event": "snapshot:coinbase:BTC-USD",
+      "prev_hash": "297bcf167a29e84d5dae3e67bdf303c40cb2827975ce4bbd8eb0e007cf0760e0",
+      "hash": "ec21eda47e25850fda906616870d370d4c6f2aa4e7db29a94ccb5d9e9a7c0b3b"
+    },
+    {
+      "seq": 43,
+      "ts": "2026-11-21T06:32:16+00:00",
+      "event": "provider:cross_check:-:BTC-USD",
+      "prev_hash": "ec21eda47e25850fda906616870d370d4c6f2aa4e7db29a94ccb5d9e9a7c0b3b",
+      "hash": "991e6a1bf796e72046b1ea7ace4d2712070e50026209e74cef822bf6e9b778f7"
+    },
+    {
+      "seq": 44,
+      "ts": "2026-11-21T06:32:16+00:00",
+      "event": "provider:fetch_ok:coinbase:PAXG-USD",
+      "prev_hash": "991e6a1bf796e72046b1ea7ace4d2712070e50026209e74cef822bf6e9b778f7",
+      "hash": "6808230bdd6398bc5e30ad52a7e6d2e7cb19a63e25b7f566cfb6144ee1596e76"
+    },
+    {
+      "seq": 45,
+      "ts": "2026-11-21T06:32:16+00:00",
+      "event": "snapshot:coinbase:PAXG-USD",
+      "prev_hash": "6808230bdd6398bc5e30ad52a7e6d2e7cb19a63e25b7f566cfb6144ee1596e76",
+      "hash": "4f6069c742ac6bdad3aa7af9df176e6bf4da73232331853d14689a1e1b42a174"
+    },
+    {
+      "seq": 46,
+      "ts": "2026-11-21T06:32:17+00:00",
+      "event": "provider:cross_check:-:PAXG-USD",
+      "prev_hash": "4f6069c742ac6bdad3aa7af9df176e6bf4da73232331853d14689a1e1b42a174",
+      "hash": "1b18a6c4e06e039661b07f873dbee63d4c0d81605969bf8053874aa2726db6cf"
     }
   ],
   "integrity": {
