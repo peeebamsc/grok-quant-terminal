@@ -187,6 +187,30 @@
     font-size: 11px; color: var(--faint); line-height: 1.45;
   }
   footer.foot strong { color: var(--amber); }
+  .pill.live { border-color: #2ee6a688; color: var(--ok); background: #2ee6a618; }
+  .panel.market { grid-column: 1 / -1; max-height: none; overflow: hidden; }
+  .mkt {
+    display: grid;
+    grid-template-columns: minmax(210px, 280px) minmax(0, 1fr);
+    gap: 12px 16px;
+    align-items: stretch;
+  }
+  .mkt-price { font-family: var(--mono); font-size: clamp(28px, 4vw, 40px); font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .mkt-row { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-top: 8px; font-size: 12px; color: var(--dim); }
+  .mkt-row b { font-family: var(--mono); color: var(--text); font-weight: 700; }
+  .mkt-status {
+    margin-top: 8px; font-family: var(--mono); font-size: 11px; color: var(--ok);
+    letter-spacing: 0.02em; line-height: 1.4;
+  }
+  .panel.market.stale .mkt-status, .mkt-status.stale { color: var(--amber); }
+  .panel.market.error .mkt-status, .mkt-status.error { color: var(--red); }
+  .panel.market.loading .mkt-status { color: var(--dim); }
+  .mkt-chart { min-width: 0; }
+  .mkt-chart svg { display: block; width: 100%; height: 108px; }
+  .mkt-axis { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 2px; }
+  @media (max-width: 980px) {
+    .mkt { grid-template-columns: 1fr; }
+  }
   #boot-err {
     display: none; position: absolute; left: 16px; right: 16px; bottom: 90px; z-index: 6;
     background: #3a0d12; border: 1px solid var(--red); color: #ffd0d4;
@@ -209,13 +233,13 @@
 <div id="labels"></div>
 <div id="boot-err"></div>
 <div class="hud">
-  <div class="banner">PAPER ONLY. NO LIVE DATA. ALL VALUES SIMULATED.</div>
+  <div class="banner">PAPER ONLY. MARKET DATA LIVE (PUBLIC). TRADES & PODS SIMULATED.</div>
   <header class="top">
     <div class="brand">
       <div class="logo">GQ</div>
       <div>
         <h1>GROK QUANT Paper Terminal</h1>
-        <p>MVP agents 00 · 06 · 07 · 08 · 11 &nbsp;·&nbsp; BTC-USD 1h pods A–C &nbsp;·&nbsp; in-browser SIMULATED state</p>
+        <p>MVP agents 00 · 06 · 07 · 08 · 11 &nbsp;·&nbsp; BTC-USD public market data &nbsp;·&nbsp; pods A–C, positions, traffic, and ledger are SIMULATED</p>
       </div>
     </div>
     <div class="clockbox">
@@ -223,7 +247,8 @@
       <div class="clock-sub">America/Chicago (CT)</div>
     </div>
     <div class="pills">
-      <span class="pill">SIMULATED</span>
+      <span class="pill live">BTC MARKET LIVE</span>
+      <span class="pill">PODS SIMULATED</span>
       <span class="pill off">LIVE TRADING OFF</span>
     </div>
   </header>
@@ -241,6 +266,24 @@
   </div>
   <div class="dock"><div class="hint">Drag to orbit · scroll to zoom · five MVP nodes with SIMULATED message traffic · three pod ribbons (baseline, no edge claimed)</div></div>
   <div class="board">
+    <section class="panel market loading" id="market-panel" aria-label="Live BTC-USD public market data">
+      <div class="label">
+        <span>BTC-USD · public market</span>
+        <span class="tag" id="mkt-tag">NO KEYS · PUBLIC API</span>
+      </div>
+      <div class="mkt">
+        <div>
+          <div class="mkt-price" id="mkt-price">—</div>
+          <div class="mkt-row" id="mkt-meta">Loading last price and 1h candles…</div>
+          <div class="mkt-status" id="mkt-status">LOADING · fetching public market data</div>
+        </div>
+        <div class="mkt-chart">
+          <div class="label" style="margin-bottom:4px"><span>1h candles</span><span id="mkt-n">—</span></div>
+          <div id="mkt-candles"></div>
+          <div class="mkt-axis"><span id="mkt-t0"></span><span id="mkt-t1"></span></div>
+        </div>
+      </div>
+    </section>
     <section class="panel" id="eq-panel"></section>
     <section class="panel">
       <div class="label">
@@ -276,7 +319,7 @@
     </section>
   </div>
   <footer class="foot">
-    PAPER only — no live broker, no real money, no live market feed. All agent traffic, ledger events, and pod equity paths are SIMULATED in this browser until a real paper-state feed is wired in.
+    PAPER only — no live broker, no real money, no orders. BTC-USD last price and 1h candles are fetched in the browser from public Exchange APIs (Coinbase primary, Kraken failover). Pod equity, open positions, agent traffic, and the ledger stay SIMULATED until a real paper-state feed is wired in.
     <strong>PROPOSED next step:</strong> Agent 11 publishes a JSON status endpoint this terminal can poll.
   </footer>
 </div>
@@ -777,6 +820,215 @@ window.addEventListener("unhandledrejection", function (e) {
 
   if (document.readyState === "complete") init3d();
   else window.addEventListener("load", init3d);
+
+  /* Live public market data: Coinbase primary, Kraken failover. No API keys. No orders. */
+  var MARKET_MS = 45000;
+  var marketLast = null;
+  window.__gqMarket = { state: "loading", source: null, price: null };
+
+  function fetchJson(url, timeoutMs) {
+    timeoutMs = timeoutMs || 8000;
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () { ctrl.abort(); }, timeoutMs);
+    return fetch(url, { signal: ctrl.signal, cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status + " " + url);
+      return r.json();
+    }).finally(function () { clearTimeout(timer); });
+  }
+
+  function fromCoinbase() {
+    return Promise.all([
+      fetchJson("https://api.exchange.coinbase.com/products/BTC-USD/ticker"),
+      fetchJson("https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=3600")
+    ]).then(function (pair) {
+      var ticker = pair[0], raw = pair[1];
+      var price = Number(ticker && ticker.price);
+      if (!isFinite(price) || price <= 0) throw new Error("Coinbase ticker missing price");
+      if (!raw || !raw.length) throw new Error("Coinbase candles empty");
+      var bars = raw.map(function (c) {
+        return { t: Number(c[0]) * 1000, o: +c[3], h: +c[2], l: +c[1], c: +c[4], v: +c[5] };
+      }).sort(function (a, b) { return a.t - b.t; });
+      return {
+        source: "Coinbase public API",
+        price: price,
+        bid: Number(ticker.bid),
+        ask: Number(ticker.ask),
+        volume: Number(ticker.volume),
+        bars: bars
+      };
+    });
+  }
+
+  function krakenResult(obj) {
+    if (!obj) throw new Error("Kraken empty body");
+    if (obj.error && obj.error.length) throw new Error("Kraken " + obj.error.join(", "));
+    return obj.result || {};
+  }
+
+  function fromKraken() {
+    return Promise.all([
+      fetchJson("https://api.kraken.com/0/public/Ticker?pair=XBTUSD"),
+      fetchJson("https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=60")
+    ]).then(function (pair) {
+      var tickRes = krakenResult(pair[0]);
+      var ohlcRes = krakenResult(pair[1]);
+      var tick = tickRes.XXBTZUSD || tickRes.XBTUSD || tickRes.BTCUSD;
+      if (!tick) {
+        var tk = Object.keys(tickRes)[0];
+        tick = tickRes[tk];
+      }
+      if (!tick || !tick.c) throw new Error("Kraken ticker missing last price");
+      var price = Number(tick.c[0]);
+      if (!isFinite(price) || price <= 0) throw new Error("Kraken ticker missing price");
+      var key = Object.keys(ohlcRes).filter(function (k) { return k !== "last"; })[0];
+      var raw = ohlcRes[key];
+      if (!raw || !raw.length) throw new Error("Kraken OHLC empty");
+      var bars = raw.map(function (c) {
+        return { t: Number(c[0]) * 1000, o: +c[1], h: +c[2], l: +c[3], c: +c[4], v: +c[6] };
+      }).sort(function (a, b) { return a.t - b.t; });
+      return {
+        source: "Kraken public API",
+        price: price,
+        bid: tick.b ? Number(tick.b[0]) : NaN,
+        ask: tick.a ? Number(tick.a[0]) : NaN,
+        volume: tick.v ? Number(tick.v[1] || tick.v[0]) : NaN,
+        bars: bars
+      };
+    });
+  }
+
+  function loadMarket() {
+    return fromCoinbase().catch(function (e1) {
+      return fromKraken().then(function (d) {
+        d.note = "failover after Coinbase: " + String(e1 && e1.message || e1);
+        return d;
+      });
+    });
+  }
+
+  function chg24(bars, price) {
+    if (!bars || !bars.length) return null;
+    var target = (bars[bars.length - 1].t) - 24 * 3600 * 1000;
+    var best = bars[0];
+    for (var i = 0; i < bars.length; i++) {
+      if (Math.abs(bars[i].t - target) < Math.abs(best.t - target)) best = bars[i];
+    }
+    var ref = best.c;
+    return { ref: ref, abs: price - ref, pct: ref ? ((price - ref) / ref) * 100 : 0 };
+  }
+
+  function ctCandle(ms) {
+    var f = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Chicago",
+      month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: true
+    });
+    return f.format(new Date(ms)) + " CT";
+  }
+
+  function drawCandles(bars) {
+    var n = Math.min(bars.length, 48);
+    bars = bars.slice(-n);
+    var W = 720, H = 108, P = 8, i;
+    var lo = bars[0].l, hi = bars[0].h;
+    for (i = 0; i < bars.length; i++) {
+      if (bars[i].l < lo) lo = bars[i].l;
+      if (bars[i].h > hi) hi = bars[i].h;
+    }
+    var pad = (hi - lo) * 0.06 || 1;
+    lo -= pad; hi += pad;
+    var slot = W / n;
+    function y(v) { return P + (1 - (v - lo) / (hi - lo)) * (H - 2 * P); }
+    var parts = [];
+    for (i = 0; i < n; i++) {
+      var b = bars[i];
+      var up = b.c >= b.o;
+      var col = up ? "#2ee6a6" : "#ff4d5a";
+      var x = (i + 0.5) * slot;
+      var top = Math.min(y(b.o), y(b.c));
+      var bot = Math.max(y(b.o), y(b.c));
+      if (bot - top < 1) bot = top + 1;
+      parts.push('<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + y(b.h).toFixed(1) + '" y2="' + y(b.l).toFixed(1) + '" stroke="' + col + '" stroke-width="1"/>');
+      parts.push('<rect x="' + (x - slot * 0.32).toFixed(1) + '" y="' + top.toFixed(1) + '" width="' + (Math.max(slot * 0.64, 1.2)).toFixed(1) + '" height="' + (bot - top).toFixed(1) + '" fill="' + col + '"/>');
+    }
+    return {
+      svg: '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="BTC-USD 1h candles">' + parts.join("") + "</svg>",
+      n: n,
+      t0: ctCandle(bars[0].t),
+      t1: ctCandle(bars[n - 1].t)
+    };
+  }
+
+  function usdPx(v) {
+    return "$" + Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function usdVol(v) {
+    if (!isFinite(v)) return "—";
+    if (v >= 1000) return Number(v).toLocaleString("en-US", { maximumFractionDigits: 0 });
+    return Number(v).toLocaleString("en-US", { maximumFractionDigits: 2 });
+  }
+
+  function paintMarket(state, data, errMsg) {
+    var panel = document.getElementById("market-panel");
+    var priceEl = document.getElementById("mkt-price");
+    var metaEl = document.getElementById("mkt-meta");
+    var stEl = document.getElementById("mkt-status");
+    panel.classList.remove("loading", "stale", "error");
+    panel.classList.add(state);
+    stEl.className = "mkt-status" + (state === "verified" ? "" : " " + state);
+    if (data) {
+      var ch = chg24(data.bars, data.price);
+      var chClass = ch && ch.pct > 0.005 ? "up" : (ch && ch.pct < -0.005 ? "down" : "flat");
+      var chTxt = "—";
+      if (ch) {
+        var sign = ch.abs >= 0 ? "+" : "−";
+        chTxt = sign + "$" + Math.abs(ch.abs).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
+          " (" + (ch.pct >= 0 ? "+" : "") + ch.pct.toFixed(2) + "%)";
+      }
+      priceEl.textContent = usdPx(data.price);
+      metaEl.innerHTML =
+        '<span>Bid <b>' + (isFinite(data.bid) ? usdPx(data.bid) : "—") + '</b></span>' +
+        '<span>Ask <b>' + (isFinite(data.ask) ? usdPx(data.ask) : "—") + '</b></span>' +
+        '<span>24h <b class="' + chClass + '">' + chTxt + '</b></span>' +
+        '<span>Volume <b>' + usdVol(data.volume) + '</b></span>';
+      var chart = drawCandles(data.bars);
+      document.getElementById("mkt-candles").innerHTML = chart.svg;
+      document.getElementById("mkt-n").textContent = chart.n + " × 1h";
+      document.getElementById("mkt-t0").textContent = chart.t0;
+      document.getElementById("mkt-t1").textContent = chart.t1;
+    }
+    if (state === "verified") {
+      stEl.textContent = "VERIFIED · source " + data.source + " · fetched " + data.fetchedCt;
+    } else if (state === "stale") {
+      stEl.textContent = "STALE · last source " + data.source + " · fetched " + data.fetchedCt + " · refresh failed at " + ctParts();
+    } else if (state === "error") {
+      stEl.textContent = "ERROR · Coinbase and Kraken public APIs failed" + (errMsg ? " · " + errMsg : "");
+    } else {
+      stEl.textContent = "LOADING · fetching public market data";
+    }
+    window.__gqMarket = {
+      state: state,
+      source: data && data.source,
+      price: data && data.price,
+      fetchedCt: data && data.fetchedCt,
+      bars: data && data.bars ? data.bars.length : 0,
+      error: errMsg || null
+    };
+  }
+
+  function refreshMarket() {
+    return loadMarket().then(function (d) {
+      d.fetchedCt = ctParts();
+      marketLast = d;
+      paintMarket("verified", d, null);
+    }).catch(function (err) {
+      var msg = String(err && err.message || err);
+      if (marketLast) paintMarket("stale", marketLast, msg);
+      else paintMarket("error", null, msg);
+    });
+  }
+
+  refreshMarket();
+  setInterval(refreshMarket, MARKET_MS);
 })();
 </script>
 </body>
