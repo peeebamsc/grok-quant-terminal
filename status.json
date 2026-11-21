@@ -1,0 +1,551 @@
+{
+  "generated_at": "2026-11-21T00:02:19-06:00",
+  "generated_at_utc": "2026-11-21T06:02:19+00:00",
+  "data_hash": "640c2ec979b640c4be6af7c8fca3c3a84bc448f26f1970692241f0216968430d",
+  "data_hash_of": "sha256 of canonical JSON of every field except generated_at*/data_hash*",
+  "schema_version": "1.0",
+  "paper_only": true,
+  "live_broker": false,
+  "project": "GROK QUANT (paper trading; simulated fills only)",
+  "criteria": {
+    "version": "criteria_v1",
+    "status": "DRAFT-reconstructed-from-owner-summary",
+    "frozen": false,
+    "hash": "a2c3c09d06ee354f151791557f5bf400074f58dc1f8f872063b8b95313290ab6",
+    "hash_of": "sha256 of the current criteria draft file (Agent 06 registry)",
+    "provenance": {
+      "version": "VERIFIED",
+      "status": "VERIFIED",
+      "frozen": "VERIFIED",
+      "hash": "VERIFIED"
+    }
+  },
+  "cadence": {
+    "cycle_minutes_past_hour": [
+      2,
+      17,
+      32,
+      47
+    ],
+    "timezone": "America/Chicago",
+    "every_minutes": 15,
+    "provenance": {
+      "cycle_minutes_past_hour": "VERIFIED",
+      "timezone": "VERIFIED",
+      "every_minutes": "VERIFIED"
+    }
+  },
+  "agents": [
+    {
+      "id": "scheduler",
+      "name": "paper-cycle scheduler (process, not an LLM agent)",
+      "status": "running",
+      "last_heartbeat": "2026-11-21T06:01:59+00:00",
+      "last_heartbeat_ct": "2026-11-21T00:01:59-06:00",
+      "heartbeat_age_s": 20,
+      "provenance": {
+        "status": "VERIFIED",
+        "last_heartbeat": "VERIFIED"
+      }
+    },
+    {
+      "id": "paper_cycle",
+      "name": "deterministic paper trading cycle (no LLM)",
+      "status": "ok",
+      "last_heartbeat": "2026-11-21T06:02:17+00:00",
+      "last_heartbeat_ct": "2026-11-21T00:02:17-06:00",
+      "provenance": {
+        "status": "VERIFIED",
+        "last_heartbeat": "VERIFIED"
+      }
+    }
+  ],
+  "agents_note": "Only processes with a real heartbeat are listed. LLM agents 00-11 have no heartbeat mechanism on this box, so their liveness is UNAVAILABLE.",
+  "pods": [
+    {
+      "id": "champion",
+      "name": "trend_ema",
+      "role": "champion",
+      "status": "ACTIVE",
+      "equity_usd": 100.0,
+      "equity_as_of": "2026-11-21T06:02:15+00:00",
+      "start_usd": 100.0,
+      "peak_usd": 100.0,
+      "dd_pct": 0.0,
+      "daily_pnl_pct": 0.0,
+      "daily_pnl_basis": "vs last equity mark before America/Chicago midnight",
+      "open_positions": [],
+      "provenance": {
+        "id": "VERIFIED",
+        "name": "VERIFIED",
+        "role": "VERIFIED",
+        "status": "VERIFIED",
+        "equity_usd": "VERIFIED",
+        "start_usd": "VERIFIED",
+        "peak_usd": "VERIFIED",
+        "dd_pct": "VERIFIED",
+        "daily_pnl_pct": "VERIFIED",
+        "open_positions": "VERIFIED"
+      }
+    },
+    {
+      "id": "challenger",
+      "name": "donchian_breakout",
+      "role": "challenger",
+      "status": "ACTIVE",
+      "equity_usd": 100.0,
+      "equity_as_of": "2026-11-21T06:02:15+00:00",
+      "start_usd": 100.0,
+      "peak_usd": 100.0,
+      "dd_pct": 0.0,
+      "daily_pnl_pct": 0.0,
+      "daily_pnl_basis": "vs last equity mark before America/Chicago midnight",
+      "open_positions": [],
+      "provenance": {
+        "id": "VERIFIED",
+        "name": "VERIFIED",
+        "role": "VERIFIED",
+        "status": "VERIFIED",
+        "equity_usd": "VERIFIED",
+        "start_usd": "VERIFIED",
+        "peak_usd": "VERIFIED",
+        "dd_pct": "VERIFIED",
+        "daily_pnl_pct": "VERIFIED",
+        "open_positions": "VERIFIED"
+      }
+    },
+    {
+      "id": "shadow_tsmom_btc",
+      "name": "tsmom_weekly",
+      "role": "research_shadow",
+      "status": "ACTIVE",
+      "equity_usd": 100.0,
+      "equity_as_of": "2026-11-21T06:02:15+00:00",
+      "start_usd": 100.0,
+      "peak_usd": 100.0,
+      "dd_pct": 0.0,
+      "daily_pnl_pct": 0.0,
+      "daily_pnl_basis": "vs last equity mark before America/Chicago midnight",
+      "open_positions": [],
+      "provenance": {
+        "id": "VERIFIED",
+        "name": "VERIFIED",
+        "role": "VERIFIED",
+        "status": "VERIFIED",
+        "equity_usd": "VERIFIED",
+        "start_usd": "VERIFIED",
+        "peak_usd": "VERIFIED",
+        "dd_pct": "VERIFIED",
+        "daily_pnl_pct": "VERIFIED",
+        "open_positions": "VERIFIED"
+      }
+    },
+    {
+      "id": "shadow_rotation_gldm_ibit",
+      "name": "rotation_4w",
+      "role": "research_shadow",
+      "status": "ACTIVE",
+      "equity_usd": 100.0,
+      "equity_as_of": "2026-11-21T06:02:16+00:00",
+      "start_usd": 100.0,
+      "peak_usd": 100.0,
+      "dd_pct": 0.0,
+      "daily_pnl_pct": 0.0,
+      "daily_pnl_basis": "vs last equity mark before America/Chicago midnight",
+      "open_positions": [],
+      "provenance": {
+        "id": "VERIFIED",
+        "name": "VERIFIED",
+        "role": "VERIFIED",
+        "status": "VERIFIED",
+        "equity_usd": "VERIFIED",
+        "start_usd": "VERIFIED",
+        "peak_usd": "VERIFIED",
+        "dd_pct": "VERIFIED",
+        "daily_pnl_pct": "VERIFIED",
+        "open_positions": "VERIFIED"
+      }
+    },
+    {
+      "id": "shadow_wma_gldm",
+      "name": "weekly_ma_5_20",
+      "role": "research_shadow",
+      "status": "ACTIVE",
+      "equity_usd": 100.0,
+      "equity_as_of": "2026-11-21T06:02:16+00:00",
+      "start_usd": 100.0,
+      "peak_usd": 100.0,
+      "dd_pct": 0.0,
+      "daily_pnl_pct": 0.0,
+      "daily_pnl_basis": "vs last equity mark before America/Chicago midnight",
+      "open_positions": [],
+      "provenance": {
+        "id": "VERIFIED",
+        "name": "VERIFIED",
+        "role": "VERIFIED",
+        "status": "VERIFIED",
+        "equity_usd": "VERIFIED",
+        "start_usd": "VERIFIED",
+        "peak_usd": "VERIFIED",
+        "dd_pct": "VERIFIED",
+        "daily_pnl_pct": "VERIFIED",
+        "open_positions": "VERIFIED"
+      }
+    },
+    {
+      "id": "shadow_inverse_biti",
+      "name": "inverse_wma_5_20_biti",
+      "role": "research_shadow",
+      "status": "ACTIVE",
+      "equity_usd": 100.0,
+      "equity_as_of": "2026-11-21T06:02:16+00:00",
+      "start_usd": 100.0,
+      "peak_usd": 100.0,
+      "dd_pct": 0.0,
+      "daily_pnl_pct": 0.0,
+      "daily_pnl_basis": "vs last equity mark before America/Chicago midnight",
+      "open_positions": [],
+      "provenance": {
+        "id": "VERIFIED",
+        "name": "VERIFIED",
+        "role": "VERIFIED",
+        "status": "VERIFIED",
+        "equity_usd": "VERIFIED",
+        "start_usd": "VERIFIED",
+        "peak_usd": "VERIFIED",
+        "dd_pct": "VERIFIED",
+        "daily_pnl_pct": "VERIFIED",
+        "open_positions": "VERIFIED"
+      }
+    },
+    {
+      "id": "shadow_range_mr",
+      "name": "range_rsi2_ibit",
+      "role": "research_shadow",
+      "status": "ACTIVE",
+      "equity_usd": 100.0,
+      "equity_as_of": "2026-11-21T06:02:16+00:00",
+      "start_usd": 100.0,
+      "peak_usd": 100.0,
+      "dd_pct": 0.0,
+      "daily_pnl_pct": 0.0,
+      "daily_pnl_basis": "vs last equity mark before America/Chicago midnight",
+      "open_positions": [],
+      "provenance": {
+        "id": "VERIFIED",
+        "name": "VERIFIED",
+        "role": "VERIFIED",
+        "status": "VERIFIED",
+        "equity_usd": "VERIFIED",
+        "start_usd": "VERIFIED",
+        "peak_usd": "VERIFIED",
+        "dd_pct": "VERIFIED",
+        "daily_pnl_pct": "VERIFIED",
+        "open_positions": "VERIFIED"
+      }
+    },
+    {
+      "id": "shadow_rotation_btcleg",
+      "name": "rotation_btcleg_4_8",
+      "role": "research_shadow",
+      "status": "ACTIVE",
+      "equity_usd": 100.0,
+      "equity_as_of": "2026-11-21T06:02:16+00:00",
+      "start_usd": 100.0,
+      "peak_usd": 100.0,
+      "dd_pct": 0.0,
+      "daily_pnl_pct": 0.0,
+      "daily_pnl_basis": "vs last equity mark before America/Chicago midnight",
+      "open_positions": [],
+      "provenance": {
+        "id": "VERIFIED",
+        "name": "VERIFIED",
+        "role": "VERIFIED",
+        "status": "VERIFIED",
+        "equity_usd": "VERIFIED",
+        "start_usd": "VERIFIED",
+        "peak_usd": "VERIFIED",
+        "dd_pct": "VERIFIED",
+        "daily_pnl_pct": "VERIFIED",
+        "open_positions": "VERIFIED"
+      }
+    },
+    {
+      "id": "shadow_invvol_gldm_ibit",
+      "name": "invvol_60_filt_weekly",
+      "role": "research_shadow",
+      "status": "ACTIVE",
+      "equity_usd": 97.7767,
+      "equity_as_of": "2026-11-21T06:02:16+00:00",
+      "start_usd": 100.0,
+      "peak_usd": 100.0,
+      "dd_pct": 2.223,
+      "daily_pnl_pct": 0.0,
+      "daily_pnl_basis": "vs last equity mark before America/Chicago midnight",
+      "open_positions": [
+        {
+          "symbol": "GLDM",
+          "side": "long",
+          "qty": 0.326899,
+          "entry": 76.476219,
+          "ts": "2026-11-17T17:46:23.875423+00:00",
+          "provenance": {
+            "symbol": "VERIFIED",
+            "side": "VERIFIED",
+            "qty": "VERIFIED",
+            "entry": "VERIFIED",
+            "ts": "VERIFIED"
+          }
+        }
+      ],
+      "provenance": {
+        "id": "VERIFIED",
+        "name": "VERIFIED",
+        "role": "VERIFIED",
+        "status": "VERIFIED",
+        "equity_usd": "VERIFIED",
+        "start_usd": "VERIFIED",
+        "peak_usd": "VERIFIED",
+        "dd_pct": "VERIFIED",
+        "daily_pnl_pct": "VERIFIED",
+        "open_positions": "VERIFIED"
+      }
+    },
+    {
+      "id": "shadow_invvol_tuned",
+      "name": "invvol_vt12",
+      "role": "research_shadow",
+      "status": "ACTIVE",
+      "equity_usd": 99.3687,
+      "equity_as_of": "2026-11-21T06:02:16+00:00",
+      "start_usd": 100.0,
+      "peak_usd": 100.0,
+      "dd_pct": 0.631,
+      "daily_pnl_pct": 0.0,
+      "daily_pnl_basis": "vs last equity mark before America/Chicago midnight",
+      "open_positions": [
+        {
+          "symbol": "GLDM",
+          "side": "long",
+          "qty": 0.168946,
+          "entry": 73.411687,
+          "ts": "2026-11-19T14:40:40.312813+00:00",
+          "provenance": {
+            "symbol": "VERIFIED",
+            "side": "VERIFIED",
+            "qty": "VERIFIED",
+            "entry": "VERIFIED",
+            "ts": "VERIFIED"
+          }
+        }
+      ],
+      "provenance": {
+        "id": "VERIFIED",
+        "name": "VERIFIED",
+        "role": "VERIFIED",
+        "status": "VERIFIED",
+        "equity_usd": "VERIFIED",
+        "start_usd": "VERIFIED",
+        "peak_usd": "VERIFIED",
+        "dd_pct": "VERIFIED",
+        "daily_pnl_pct": "VERIFIED",
+        "open_positions": "VERIFIED"
+      }
+    },
+    {
+      "id": "pod_A",
+      "name": "Signal pod A",
+      "role": "planned",
+      "status": "not_yet_running",
+      "equity_usd": null,
+      "start_usd": null,
+      "dd_pct": null,
+      "daily_pnl_pct": null,
+      "open_positions": [],
+      "provenance": {
+        "status": "VERIFIED",
+        "equity_usd": "UNAVAILABLE",
+        "start_usd": "UNAVAILABLE",
+        "dd_pct": "UNAVAILABLE",
+        "daily_pnl_pct": "UNAVAILABLE"
+      },
+      "note": "No pod A/B/C book exists in the paper journal (verified); not running."
+    },
+    {
+      "id": "pod_B",
+      "name": "Signal pod B",
+      "role": "planned",
+      "status": "not_yet_running",
+      "equity_usd": null,
+      "start_usd": null,
+      "dd_pct": null,
+      "daily_pnl_pct": null,
+      "open_positions": [],
+      "provenance": {
+        "status": "VERIFIED",
+        "equity_usd": "UNAVAILABLE",
+        "start_usd": "UNAVAILABLE",
+        "dd_pct": "UNAVAILABLE",
+        "daily_pnl_pct": "UNAVAILABLE"
+      },
+      "note": "No pod A/B/C book exists in the paper journal (verified); not running."
+    },
+    {
+      "id": "pod_C",
+      "name": "Signal pod C",
+      "role": "planned",
+      "status": "not_yet_running",
+      "equity_usd": null,
+      "start_usd": null,
+      "dd_pct": null,
+      "daily_pnl_pct": null,
+      "open_positions": [],
+      "provenance": {
+        "status": "VERIFIED",
+        "equity_usd": "UNAVAILABLE",
+        "start_usd": "UNAVAILABLE",
+        "dd_pct": "UNAVAILABLE",
+        "daily_pnl_pct": "UNAVAILABLE"
+      },
+      "note": "No pod A/B/C book exists in the paper journal (verified); not running."
+    }
+  ],
+  "risk": {
+    "per_trade_pct": 0.5,
+    "per_trade_usd": 0.5,
+    "per_trade_rule": "min($0.50, 0.5% of equity), incl. round-trip cost",
+    "daily_loss_pct": 2.0,
+    "weekly_loss_pct": 5.0,
+    "dd_kill_pct": 10.0,
+    "max_concurrent_positions": 1,
+    "allow_leverage": false,
+    "allow_short": false,
+    "kill_active": false,
+    "kill_switch": "state/HALT flag (blocks new simulated entries)",
+    "books_suspended": [],
+    "books_restricted": [],
+    "source": "grokquant/config.py RiskLimits (frozen dataclass)",
+    "provenance": {
+      "per_trade_pct": "VERIFIED",
+      "per_trade_usd": "VERIFIED",
+      "daily_loss_pct": "VERIFIED",
+      "weekly_loss_pct": "VERIFIED",
+      "dd_kill_pct": "VERIFIED",
+      "max_concurrent_positions": "VERIFIED",
+      "allow_leverage": "VERIFIED",
+      "allow_short": "VERIFIED",
+      "kill_active": "VERIFIED",
+      "books_suspended": "VERIFIED",
+      "books_restricted": "VERIFIED"
+    }
+  },
+  "ledger": {
+    "ok": true,
+    "records": 32,
+    "head_seq": 32,
+    "head_hash": "cb4e8be55d1c8b8ed9ce8d20aaec3adb77211167c8064be5944111cc0a637f01",
+    "first_break": null,
+    "provenance": {
+      "ok": "VERIFIED",
+      "records": "VERIFIED",
+      "head_hash": "VERIFIED"
+    }
+  },
+  "ledger_tail": [
+    {
+      "seq": 21,
+      "ts": "2026-11-21T05:47:13+00:00",
+      "event": "provider:cross_check:-:BTC-USD",
+      "prev_hash": "52f7505d101c3e77c9a693537ad246178a41dab113948ed72ee35d91c29d49b4",
+      "hash": "b074b2fc2298777fc385de4572bae9ba5966a6331c2e6327c663a7957b694f43"
+    },
+    {
+      "seq": 22,
+      "ts": "2026-11-21T05:47:13+00:00",
+      "event": "provider:fetch_ok:coinbase:PAXG-USD",
+      "prev_hash": "b074b2fc2298777fc385de4572bae9ba5966a6331c2e6327c663a7957b694f43",
+      "hash": "5eb5c1cb4ea0fcf5598915d12de3bc05971132754b6350876c8589e6ba7b33b3"
+    },
+    {
+      "seq": 23,
+      "ts": "2026-11-21T05:47:13+00:00",
+      "event": "snapshot:coinbase:PAXG-USD",
+      "prev_hash": "5eb5c1cb4ea0fcf5598915d12de3bc05971132754b6350876c8589e6ba7b33b3",
+      "hash": "47844b46695c86a7319934a37abcd79625dc2175e53df6e59bde2c25a3e4263b"
+    },
+    {
+      "seq": 24,
+      "ts": "2026-11-21T05:47:14+00:00",
+      "event": "provider:cross_check:-:PAXG-USD",
+      "prev_hash": "47844b46695c86a7319934a37abcd79625dc2175e53df6e59bde2c25a3e4263b",
+      "hash": "7fb8021a8f36fe7bfd850dbecc090fdd1d02980ca40e2b8f8f7b5baeba1fd6e6"
+    },
+    {
+      "seq": 25,
+      "ts": "2026-11-21T05:56:46+00:00",
+      "event": "integrity_update",
+      "prev_hash": "7fb8021a8f36fe7bfd850dbecc090fdd1d02980ca40e2b8f8f7b5baeba1fd6e6",
+      "hash": "2ddf4029107e8a54f37d45c0037993bde99254f579fff7ab51d5310fa2d8b0ca"
+    },
+    {
+      "seq": 26,
+      "ts": "2026-11-21T05:57:12+00:00",
+      "event": "integrity_update",
+      "prev_hash": "2ddf4029107e8a54f37d45c0037993bde99254f579fff7ab51d5310fa2d8b0ca",
+      "hash": "c48f321e01ac55b76ff1864d52eadb37bbef859a71872a664d8720055cc3b366"
+    },
+    {
+      "seq": 27,
+      "ts": "2026-11-21T06:02:17+00:00",
+      "event": "provider:fetch_ok:coinbase:BTC-USD",
+      "prev_hash": "c48f321e01ac55b76ff1864d52eadb37bbef859a71872a664d8720055cc3b366",
+      "hash": "72531df386114146ca8cd8cb88512ff542b21bbc57075d22b5ab42922182c641"
+    },
+    {
+      "seq": 28,
+      "ts": "2026-11-21T06:02:17+00:00",
+      "event": "snapshot:coinbase:BTC-USD",
+      "prev_hash": "72531df386114146ca8cd8cb88512ff542b21bbc57075d22b5ab42922182c641",
+      "hash": "45ac9bc06a7aea5585d47b4a34f186e37367da6a3d281ce33d39acca57277c51"
+    },
+    {
+      "seq": 29,
+      "ts": "2026-11-21T06:02:18+00:00",
+      "event": "provider:cross_check:-:BTC-USD",
+      "prev_hash": "45ac9bc06a7aea5585d47b4a34f186e37367da6a3d281ce33d39acca57277c51",
+      "hash": "eaa408aa9313dcd4a64d1eb34ef730dd02ca03f94dc666606116a9c70e660770"
+    },
+    {
+      "seq": 30,
+      "ts": "2026-11-21T06:02:18+00:00",
+      "event": "provider:fetch_ok:coinbase:PAXG-USD",
+      "prev_hash": "eaa408aa9313dcd4a64d1eb34ef730dd02ca03f94dc666606116a9c70e660770",
+      "hash": "ea1d18769f90ab521e66d475ff5d08c3ff22f3b01d430ca311b9bb6ebb4caaba"
+    },
+    {
+      "seq": 31,
+      "ts": "2026-11-21T06:02:18+00:00",
+      "event": "snapshot:coinbase:PAXG-USD",
+      "prev_hash": "ea1d18769f90ab521e66d475ff5d08c3ff22f3b01d430ca311b9bb6ebb4caaba",
+      "hash": "1c29030d1294ffbb410bc846272273fef326faeaeaa5d375a2a89d799816a4d3"
+    },
+    {
+      "seq": 32,
+      "ts": "2026-11-21T06:02:19+00:00",
+      "event": "provider:cross_check:-:PAXG-USD",
+      "prev_hash": "1c29030d1294ffbb410bc846272273fef326faeaeaa5d375a2a89d799816a4d3",
+      "hash": "cb4e8be55d1c8b8ed9ce8d20aaec3adb77211167c8064be5944111cc0a637f01"
+    }
+  ],
+  "integrity": {
+    "code_ok": true,
+    "tree_hash": "afba57d816bda681e4d5c403b75b609ef28151284b4dde490142d5b71f279362",
+    "seals_ok": true,
+    "seals_checked": 18,
+    "provenance": {
+      "code_ok": "VERIFIED",
+      "tree_hash": "VERIFIED",
+      "seals_ok": "VERIFIED"
+    }
+  }
+}
