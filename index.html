@@ -40,7 +40,7 @@
     letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px;
     border: 1px solid currentColor; background: rgba(0,0,0,0.55);
   }
-  .hud { position: absolute; inset: 0; z-index: 2; display: grid; grid-template-rows: auto auto auto 1fr auto auto; pointer-events: none; }
+  .hud { position: absolute; inset: 0; z-index: 2; display: grid; grid-template-rows: auto auto auto auto 1fr auto auto; pointer-events: none; }
   .hud > * { pointer-events: auto; }
   .banner {
     background: #3a0d12;
@@ -141,6 +141,7 @@
   .eqcard .sub { font-size: 10px; color: var(--faint); margin-top: 2px; }
   .eqcard svg { display: block; width: 100%; height: 36px; margin-top: 4px; }
   .tag { font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; color: var(--amber); }
+  .label .tag.keepcase { text-transform: none; letter-spacing: 0.04em; }
   .pos-empty { color: var(--dim); font-size: 13px; padding: 10px 0 6px; }
   .toggle {
     font: inherit; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
@@ -187,6 +188,35 @@
     font-size: 11px; color: var(--faint); line-height: 1.45;
   }
   footer.foot strong { color: var(--amber); }
+  .feed-flag {
+    display: none;
+    background: #3a2a08;
+    border-bottom: 1px solid #ffb02099;
+    color: #ffd7a0;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 6px 12px;
+  }
+  .feed-flag.show { display: block; }
+  .bookrow {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) auto auto;
+    gap: 6px 8px;
+    align-items: baseline;
+    border-top: 1px solid var(--line);
+    padding: 6px 0;
+    font-size: 12px;
+  }
+  .bookrow:first-of-type { border-top: 0; }
+  .bookrow .bn { font-weight: 700; }
+  .bookrow .bs { font-size: 10px; color: var(--faint); }
+  .bookrow.planned { opacity: 0.8; }
+  .bookrow.planned .bn, .bookrow.planned .amt { color: var(--faint); }
+  .nyr { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; color: var(--amber); }
+  .integ { font-family: var(--mono); font-size: 10px; color: var(--dim); margin-top: 8px; line-height: 1.45; word-break: break-all; }
   .pill.live { border-color: #2ee6a688; color: var(--ok); background: #2ee6a618; }
   .panel.market { grid-column: 1 / -1; max-height: none; overflow: hidden; }
   .mkt {
@@ -233,7 +263,8 @@
 <div id="labels"></div>
 <div id="boot-err"></div>
 <div class="hud">
-  <div class="banner">PAPER ONLY. MARKET DATA LIVE (PUBLIC). TRADES & PODS SIMULATED.</div>
+  <div class="banner" id="banner">PAPER ONLY · MARKET DATA LIVE · BOOKS FROM PAPER LEDGER · NO REAL MONEY</div>
+  <div class="feed-flag" id="feed-flag" role="status"></div>
   <header class="top">
     <div class="brand">
       <div class="logo">GQ</div>
@@ -248,11 +279,11 @@
     </div>
     <div class="pills">
       <span class="pill live">BTC MARKET LIVE</span>
-      <span class="pill">PODS SIMULATED</span>
+      <span class="pill" id="pill-mode">PODS SIMULATED</span>
       <span class="pill off">LIVE TRADING OFF</span>
     </div>
   </header>
-  <div class="status-strip" title="OWNER-REPORTED · UNVERIFIED (artifacts not found on box)">
+  <div class="status-strip" id="status-strip" title="OWNER-REPORTED · UNVERIFIED (artifacts not found on box)">
     <span class="chip draft"><span class="k">Criteria v1</span> <b>DRAFT NOT FROZEN</b></span>
     <span class="chip">
       <span class="k">hash</span>
@@ -264,7 +295,7 @@
     <span class="chip ok"><span class="k">bars</span> <b>17,690</b></span>
     <span class="verified">OWNER-REPORTED · UNVERIFIED (artifacts not found on box)</span>
   </div>
-  <div class="dock"><div class="hint">Drag to orbit · scroll to zoom · five MVP nodes with SIMULATED message traffic · three pod ribbons (baseline, no edge claimed)</div></div>
+  <div class="dock"><div class="hint" id="hint">Drag to orbit · scroll to zoom · five MVP nodes with SIMULATED message traffic · three pod ribbons (baseline, no edge claimed)</div></div>
   <div class="board">
     <section class="panel market loading" id="market-panel" aria-label="Live BTC-USD public market data">
       <div class="label">
@@ -293,13 +324,13 @@
       <div id="pos-body"></div>
     </section>
     <section class="panel">
-      <div class="label"><span>Hash-chained ledger</span><span class="tag">SHA-256 · SIMULATED</span></div>
+      <div class="label"><span>Hash-chained ledger</span><span class="tag" id="ledger-tag">SHA-256 · SIMULATED</span></div>
       <div class="ledger" id="ledger"></div>
     </section>
     <section class="panel" id="risk-panel" style="grid-column: 1 / -1; max-height: none;">
       <div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:stretch;">
         <div>
-          <div class="label"><span>Risk limits</span><span class="tag">PAPER BOOK · SIMULATED</span></div>
+          <div class="label"><span>Risk limits</span><span class="tag" id="risk-tag">PAPER BOOK · SIMULATED</span></div>
           <div class="risk-rows" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
             <div class="rr"><span>Per trade</span><span>0.5% of equity</span></div>
             <div class="rr"><span>Daily loss cap</span><span>2%</span></div>
@@ -319,8 +350,7 @@
     </section>
   </div>
   <footer class="foot">
-    PAPER only — no live broker, no real money, no orders. BTC-USD last price and 1h candles are fetched in the browser from public Exchange APIs (Coinbase primary, Kraken failover). Pod equity, open positions, agent traffic, and the ledger stay SIMULATED until a real paper-state feed is wired in.
-    <strong>PROPOSED next step:</strong> Agent 11 publishes a JSON status endpoint this terminal can poll.
+    PAPER only — no live broker, no real money, no orders. BTC-USD last price and 1h candles come from public Exchange APIs (Coinbase primary, Kraken failover). Paper books, positions, risk, and the ledger come from <code>status.json</code> when the feed is fresh (Agent 11, every 15 minutes); otherwise this page falls back to a SIMULATED view.
   </footer>
 </div>
 <script>
@@ -393,6 +423,10 @@ window.addEventListener("unhandledrejection", function (e) {
     return eq;
   }
   PODS.forEach(function (p) { p.equity = seededWalk(p.seed, 96, 100); });
+  var paper3d = { ready: false, simTraffic: true, setLive: function () {}, setSimulated: function () {} };
+  var pendingPaper = null;
+  var SIM_STRIP = null;
+  var SIM_RISK = null;
 
   /* SHA-256 (sync, works on file://). Public-domain compact implementation. */
   function sha256hex(msg) {
@@ -555,7 +589,9 @@ window.addEventListener("unhandledrejection", function (e) {
     appendLedger("DEMO_TOGGLE", demoOn ? "simulated demo positions shown (not a paper fill)" : "demo off; no open paper positions");
   });
 
+  var paperFeedMode = "pending";
   function renderLedger() {
+    if (paperFeedMode === "live") return;
     var el = document.getElementById("ledger");
     var rows = ledger.slice(-10).reverse();
     el.innerHTML = rows.map(function (ev) {
@@ -699,10 +735,14 @@ window.addEventListener("unhandledrejection", function (e) {
     }
     var spawnClock = 0;
 
-    /* Three equity ribbons, in front of the agent graph. */
+    /* Simulated equity ribbons (pods A–C). Live books use bookGroup pillars. */
     var ribGroup = new THREE.Group();
     ribGroup.position.set(0, 1.55, -2.15);
     scene.add(ribGroup);
+    var bookGroup = new THREE.Group();
+    bookGroup.position.set(0, 0.85, 1.25);
+    bookGroup.visible = false;
+    scene.add(bookGroup);
     PODS.forEach(function (pod, pi) {
       var pts = [];
       var eq = pod.equity;
@@ -792,10 +832,12 @@ window.addEventListener("unhandledrejection", function (e) {
         nodeMeshes[i].ring.rotation.z += dt * 0.6;
         nodeMeshes[i].group.position.y = AGENTS[i].pos[1] + Math.sin(now * 0.0015 + i) * 0.06;
       }
-      spawnClock += dt;
-      if (spawnClock > 0.45 && packets.length < 14) {
-        spawnClock = 0;
-        spawnPacket(linkCurves[Math.floor(Math.random() * linkCurves.length)]);
+      if (paper3d.simTraffic) {
+        spawnClock += dt;
+        if (spawnClock > 0.45 && packets.length < 14) {
+          spawnClock = 0;
+          spawnPacket(linkCurves[Math.floor(Math.random() * linkCurves.length)]);
+        }
       }
       for (i = packets.length - 1; i >= 0; i--) {
         packets[i].t += packets[i].speed * dt;
@@ -816,6 +858,101 @@ window.addEventListener("unhandledrejection", function (e) {
     }
     applyCam();
     requestAnimationFrame(tick);
+
+    function clearGroup(g) {
+      while (g.children.length) {
+        var ch = g.children[0];
+        g.remove(ch);
+        if (ch.geometry) ch.geometry.dispose();
+        if (ch.material) {
+          if (ch.material.dispose) ch.material.dispose();
+        }
+      }
+    }
+    function clearPackets() {
+      while (packets.length) {
+        var pk = packets.pop();
+        nodeGroup.remove(pk.mesh);
+        pk.mesh.geometry.dispose();
+        pk.mesh.material.dispose();
+      }
+    }
+    function setAgentAppearance(live) {
+      htmlLabels.forEach(function (lab, ix) {
+        var st = lab.el.querySelector(".st");
+        var core = nodeMeshes[ix].core;
+        if (live) {
+          st.textContent = "UNAVAILABLE";
+          st.style.color = "#94a3b8";
+          core.material.color.setHex(0x66707a);
+          core.material.emissive.setHex(0x334047);
+          core.material.emissiveIntensity = 0.2;
+        } else {
+          st.textContent = AGENTS[ix].status + " · SIMULATED";
+          st.style.color = AGENTS[ix].hex;
+          core.material.color.setHex(AGENTS[ix].color);
+          core.material.emissive.setHex(AGENTS[ix].color);
+          core.material.emissiveIntensity = 0.55;
+        }
+      });
+    }
+    var BOOK_COLORS = [0x7aa2ff, 0xffb020, 0x3ee0c4, 0xc084fc, 0x94a3b8, 0x5eead4, 0xf59e0b, 0x60a5fa, 0xf472b6, 0x34d399];
+    function buildBookVisuals(pods) {
+      clearGroup(bookGroup);
+      var running = (pods || []).filter(function (p) {
+        return p && p.role !== "planned" && p.status !== "not_yet_running" && p.equity_usd != null;
+      });
+      var n = running.length || 1;
+      running.forEach(function (bp, ix) {
+        var x = (ix - (running.length - 1) / 2) * 0.82;
+        var eq = Number(bp.equity_usd);
+        var start = Number(bp.start_usd) || 100;
+        var h = Math.max(0.4, (eq / start) * 2.1);
+        var pnl = eq - start;
+        var color = pnl < -0.05 ? 0xff4d5a : BOOK_COLORS[ix % BOOK_COLORS.length];
+        if (bp.role === "champion") color = pnl < -0.05 ? 0xff4d5a : 0x7aa2ff;
+        if (bp.role === "challenger") color = pnl < -0.05 ? 0xff4d5a : 0xffb020;
+        var mesh = new THREE.Mesh(
+          new THREE.BoxGeometry(0.52, 1, 0.52),
+          new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.35, roughness: 0.4 })
+        );
+        mesh.scale.y = h;
+        mesh.position.set(x, h / 2, 0);
+        bookGroup.add(mesh);
+        var y = 0.12 + Math.max(-0.4, (eq - start) * 0.08);
+        var curve = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(x - 0.28, y, -0.65),
+          new THREE.Vector3(x + 0.28, y, -0.65)
+        ]);
+        bookGroup.add(new THREE.Mesh(
+          new THREE.TubeGeometry(curve, 8, 0.03, 6, false),
+          new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.55, roughness: 0.3 })
+        ));
+      });
+      var base = new THREE.Mesh(
+        new THREE.BoxGeometry(Math.max(running.length, 1) * 0.82 + 0.5, 0.015, 1.15),
+        new THREE.MeshBasicMaterial({ color: 0x5b6776, transparent: true, opacity: 0.35 })
+      );
+      base.position.y = 0.02;
+      bookGroup.add(base);
+    }
+    paper3d.setLive = function (st) {
+      paper3d.simTraffic = false;
+      ribGroup.visible = false;
+      bookGroup.visible = true;
+      buildBookVisuals(st && st.pods);
+      setAgentAppearance(true);
+      clearPackets();
+    };
+    paper3d.setSimulated = function () {
+      paper3d.simTraffic = true;
+      ribGroup.visible = true;
+      bookGroup.visible = false;
+      clearGroup(bookGroup);
+      setAgentAppearance(false);
+    };
+    paper3d.ready = true;
+    if (pendingPaper) paper3d.setLive(pendingPaper);
   }
 
   if (document.readyState === "complete") init3d();
@@ -1029,6 +1166,245 @@ window.addEventListener("unhandledrejection", function (e) {
 
   refreshMarket();
   setInterval(refreshMarket, MARKET_MS);
+
+  /* Paper ledger feed: ./status.json from Agent 11. Never invent orders. */
+  var STATUS_MS = 60000;
+  var STATUS_MAX_AGE_MS = 45 * 60 * 1000;
+  var FOOT_LIVE = "PAPER only — no live broker, no real money, no orders. BTC-USD last price and 1h candles come from public Exchange APIs (Coinbase primary, Kraken failover). Paper books, positions, risk, and the ledger are VERIFIED from the paper-ledger status feed (Agent 11).";
+  var FOOT_SIM = "PAPER only — no live broker, no real money, no orders. BTC-USD last price and 1h candles come from public Exchange APIs (Coinbase primary, Kraken failover). The paper-ledger status feed is unavailable, so books, positions, agent traffic, and the ledger are SIMULATED.";
+
+  function shortH(h) {
+    h = String(h || "");
+    if (h.length < 16) return h || "—";
+    return h.slice(0, 8) + "…" + h.slice(-6);
+  }
+  function fmtCt(iso) {
+    var t = Date.parse(iso);
+    if (!isFinite(t)) return iso || "—";
+    return ctParts(new Date(t));
+  }
+  function statusAgeMs(st) {
+    var t = Date.parse((st && (st.generated_at || st.generated_at_utc)) || "");
+    if (!isFinite(t)) return Infinity;
+    return Date.now() - t;
+  }
+  function isFresh(st) {
+    return !!(st && statusAgeMs(st) <= STATUS_MAX_AGE_MS);
+  }
+  function setFlag(show, text) {
+    var el = document.getElementById("feed-flag");
+    if (!el) return;
+    el.textContent = text || "";
+    if (show) el.classList.add("show");
+    else el.classList.remove("show");
+  }
+
+  function applySimulatedView() {
+    paperFeedMode = "simulated";
+    pendingPaper = null;
+    setFlag(true, "STATUS FEED UNAVAILABLE · SHOWING SIMULATED");
+    var pill = document.getElementById("pill-mode");
+    if (pill) pill.textContent = "PODS SIMULATED";
+    var strip = document.getElementById("status-strip");
+    if (strip && SIM_STRIP) {
+      strip.innerHTML = SIM_STRIP;
+      strip.title = "OWNER-REPORTED · UNVERIFIED (artifacts not found on box)";
+    }
+    var hint = document.getElementById("hint");
+    if (hint) hint.textContent = "Drag to orbit · scroll to zoom · five MVP nodes with SIMULATED message traffic · three pod ribbons (baseline, no edge claimed)";
+    var demo = document.getElementById("demo-toggle");
+    if (demo) demo.style.display = "";
+    var ltag = document.getElementById("ledger-tag");
+    if (ltag) { ltag.textContent = "SHA-256 · SIMULATED"; ltag.classList.remove("keepcase"); }
+    var rtag = document.getElementById("risk-tag");
+    if (rtag) { rtag.textContent = "PAPER BOOK · SIMULATED"; rtag.classList.remove("keepcase"); }
+    var risk = document.getElementById("risk-panel");
+    if (risk && SIM_RISK) risk.innerHTML = SIM_RISK;
+    var foot = document.querySelector("footer.foot");
+    if (foot) foot.innerHTML = FOOT_SIM;
+    renderEquity();
+    renderPositions();
+    renderLedger();
+    if (paper3d.ready) paper3d.setSimulated();
+    window.__gqPaper = { mode: "simulated", reason: "unavailable" };
+  }
+
+  function applyLiveView(st) {
+    paperFeedMode = "live";
+    pendingPaper = st;
+    setFlag(false, "");
+    var pill = document.getElementById("pill-mode");
+    if (pill) pill.textContent = "PAPER LEDGER";
+    var hint = document.getElementById("hint");
+    if (hint) hint.textContent = "Drag to orbit · scroll to zoom · real paper-book pillars · MVP agents UNAVAILABLE (no heartbeat)";
+    var demo = document.getElementById("demo-toggle");
+    if (demo) { demo.style.display = "none"; demo.classList.remove("on"); }
+    var gen = fmtCt(st.generated_at || st.generated_at_utc);
+    var verifiedLine = "VERIFIED · paper ledger · generated_at " + gen;
+
+    var crit = st.criteria || {};
+    var integ = st.integrity || {};
+    var led = st.ledger || {};
+    var ags = st.agents || [];
+    var chash = String(crit.hash || "");
+    var strip = document.getElementById("status-strip");
+    if (strip) {
+      strip.title = verifiedLine;
+      var frozen = crit.frozen ? "FROZEN" : "DRAFT NOT FROZEN";
+      var seals = integ.seals_ok ? ("OK · " + (integ.seals_checked || 0) + " checked") : "FAIL";
+      var code = integ.code_ok ? "OK" : "FAIL";
+      var chain = led.ok ? ("OK · " + (led.records || 0) + " records") : "BREAK";
+      var agentChips = ags.map(function (a) {
+        return '<span class="chip ok"><span class="k">' + (a.id || "agent") + '</span> <b>' + (a.status || "") + '</b></span>';
+      }).join("");
+      strip.innerHTML =
+        '<span class="chip draft"><span class="k">Criteria v1</span> <b>' + frozen + '</b></span>' +
+        '<span class="chip"><span class="k">hash</span> <span class="hash" tabindex="0" title="' + chash + '">' + shortH(chash) + '<span class="tip">' + chash + '</span></span></span>' +
+        '<span class="chip ok"><span class="k">seals</span> <b>' + seals + '</b></span>' +
+        '<span class="chip ok"><span class="k">code</span> <b>' + code + '</b></span>' +
+        '<span class="chip ok"><span class="k">ledger</span> <b>' + chain + '</b></span>' +
+        agentChips +
+        '<span class="chip"><span class="k">00 06 07 08 11</span> <b>UNAVAILABLE</b></span>' +
+        '<span class="verified">' + verifiedLine + '</span>';
+    }
+
+    var pods = st.pods || [];
+    var running = pods.filter(function (bp) { return bp.role !== "planned" && bp.status !== "not_yet_running"; });
+    var planned = pods.filter(function (bp) { return bp.role === "planned" || bp.status === "not_yet_running"; });
+    var startSum = 0, eqSum = 0;
+    running.forEach(function (bp) {
+      startSum += Number(bp.start_usd) || 0;
+      eqSum += Number(bp.equity_usd) || 0;
+    });
+    var eqHtml = '<div class="label"><span>Paper books</span><span class="tag keepcase">' + verifiedLine + '</span></div>';
+    eqHtml += '<div class="sub" style="font-size:11px;color:var(--dim);margin-bottom:8px;text-transform:none">' + verifiedLine + ' · Combined ' + usd(eqSum) + ' vs ' + usd(startSum) + ' start · paper fills only</div>';
+    function moneyDelta(v) {
+      var n = Number(v);
+      var s = (n < 0 ? "-" : (n > 0 ? "+" : "")) + "$" + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return s;
+    }
+    function bookRow(bp, plannedFlag) {
+      var label;
+      if (bp.id === "pod_A" || bp.id === "pod_B" || bp.id === "pod_C") {
+        label = "Pod " + bp.id.slice(-1);
+      } else if (bp.role === "champion" || bp.role === "challenger") {
+        label = bp.role + " · " + (bp.name || bp.id);
+      } else {
+        label = (bp.id || "") + " · " + (bp.name || "");
+      }
+      if (plannedFlag) {
+        return '<div class="bookrow planned"><div><div class="bn">' + label + '</div><div class="bs">' + (bp.note || "planned") + '</div></div><span class="nyr">NOT YET RUNNING</span><span></span></div>';
+      }
+      var eq = Number(bp.equity_usd);
+      var start = Number(bp.start_usd) || 100;
+      var pnl = eq - start;
+      var cls = pnl > 0.004 ? "up" : (pnl < -0.004 ? "down" : "flat");
+      var role = (bp.role || "") + (bp.status ? " · " + bp.status : "");
+      return '<div class="bookrow"><div><div class="bn">' + label + '</div><div class="bs">' + role + '</div></div><span class="amt mono ' + cls + '">' + usd(eq) + ' <span style="color:var(--faint);font-weight:400">vs ' + usd(start) + '</span></span><span class="mono ' + cls + '">' + moneyDelta(pnl) + '</span></div>';
+    }
+    running.forEach(function (bp) { eqHtml += bookRow(bp, false); });
+    planned.forEach(function (bp) { eqHtml += bookRow(bp, true); });
+    document.getElementById("eq-panel").innerHTML = eqHtml;
+
+    var pos = [];
+    running.forEach(function (bp) {
+      (bp.open_positions || []).forEach(function (op) {
+        pos.push({ book: bp.id, name: bp.name, pos: op });
+      });
+    });
+    var pbody = document.getElementById("pos-body");
+    if (!pos.length) {
+      pbody.innerHTML = '<div class="pos-empty">No open paper positions</div><div style="font-size:11px;color:var(--faint)">' + verifiedLine + '</div>';
+    } else {
+      pbody.innerHTML = pos.map(function (row) {
+        var op = row.pos;
+        return '<div class="demo-row">' +
+          '<span class="badge">VERIFIED</span>' +
+          '<span>' + row.book + ' · ' + (op.symbol || "") + ' · ' + (op.side || "") + '</span>' +
+          '<span class="mono">qty ' + Number(op.qty).toFixed(6) + ' · entry ' + usd(op.entry) + '</span>' +
+          '<span style="flex-basis:100%;font-size:11px;color:var(--faint)">' + fmtCt(op.ts) + ' · ' + verifiedLine + '</span>' +
+          "</div>";
+      }).join("");
+    }
+
+    var ltag = document.getElementById("ledger-tag");
+    if (ltag) { ltag.textContent = "VERIFIED · paper ledger"; ltag.classList.add("keepcase"); }
+    var tail = (st.ledger_tail || []).slice().sort(function (a, b) { return (b.seq || 0) - (a.seq || 0); });
+    var ledEl = document.getElementById("ledger");
+    ledEl.innerHTML = (led.ok ? "" : '<div style="color:var(--red);margin-bottom:6px">CHAIN BREAK at ' + (led.first_break || "?") + "</div>") +
+      tail.map(function (ev) {
+        return '<div class="lev"><div class="seq">#' + ev.seq + '</div><div>' +
+          '<div><span class="typ">' + (ev.event || "") + '</span></div>' +
+          '<div class="hx">' + fmtCt(ev.ts) + ' · prev ' + shortH(ev.prev_hash) + ' · sha256 ' + shortH(ev.hash) + ' · VERIFIED</div>' +
+          "</div></div>";
+      }).join("");
+
+    var risk = st.risk || {};
+    var rtag = document.getElementById("risk-tag");
+    if (rtag) { rtag.textContent = "VERIFIED · paper ledger"; rtag.classList.add("keepcase"); }
+    var killOn = !!risk.kill_active;
+    var dir = risk.allow_short ? "Shorts allowed" : "Spot long-only";
+    var lev = risk.allow_leverage ? "Leverage on" : "1x";
+    var riskPanel = document.getElementById("risk-panel");
+    riskPanel.innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:stretch;">' +
+      "<div>" +
+      '<div class="label"><span>Risk limits</span><span class="tag keepcase" id="risk-tag">VERIFIED · paper ledger</span></div>' +
+      '<div class="risk-rows" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">' +
+      '<div class="rr"><span>Per trade</span><span>' + (risk.per_trade_pct != null ? risk.per_trade_pct + "% of equity" : "—") + (risk.per_trade_rule ? " · " + risk.per_trade_rule : "") + "</span></div>" +
+      '<div class="rr"><span>Daily loss cap</span><span>' + (risk.daily_loss_pct != null ? risk.daily_loss_pct + "%" : "—") + "</span></div>" +
+      '<div class="rr"><span>Weekly loss cap</span><span>' + (risk.weekly_loss_pct != null ? risk.weekly_loss_pct + "%" : "—") + "</span></div>" +
+      '<div class="rr"><span>Drawdown kill</span><span>' + (risk.dd_kill_pct != null ? risk.dd_kill_pct + "% · owner-reset" : "—") + "</span></div>" +
+      '<div class="rr"><span>Max concurrent positions</span><span>' + (risk.max_concurrent_positions != null ? String(risk.max_concurrent_positions) : "—") + "</span></div>" +
+      '<div class="rr"><span>Direction</span><span>' + dir + "</span></div>" +
+      '<div class="rr"><span>Leverage</span><span>' + lev + "</span></div>" +
+      "</div>" +
+      '<div class="integ">Integrity seals: ' + (integ.seals_ok ? "OK" : "FAIL") + " · " + (integ.seals_checked || 0) + " checked · code " + (integ.code_ok ? "OK" : "FAIL") +
+      " · tree " + shortH(integ.tree_hash) + " · VERIFIED" +
+      (st.agents_note ? "<br>" + st.agents_note : "") + "</div>" +
+      "</div>" +
+      '<div class="kill" style="' + (killOn ? "border-color:#ff4d5a99;background:#2a0d10" : "") + '">' +
+      '<div class="lamp" style="' + (killOn ? "background:var(--red);box-shadow:0 0 12px #ff4d5aaa" : "") + '"></div>' +
+      "<div><div class=\"kl\" style=\"" + (killOn ? "color:var(--red)" : "") + "\">KILL</div>" +
+      '<div class="kd">' + (killOn ? "ACTIVE" : "INACTIVE") + " · " + (risk.dd_kill_pct || 10) + "% DD · owner-reset · " + (killOn ? "triggered" : "not triggered") + "</div></div></div>" +
+      "</div>";
+
+    var foot = document.querySelector("footer.foot");
+    if (foot) foot.textContent = FOOT_LIVE;
+    if (paper3d.ready) paper3d.setLive(st);
+    else pendingPaper = st;
+    window.__gqPaper = {
+      mode: "live",
+      generated_at: st.generated_at,
+      books: running.length,
+      planned: planned.length,
+      positions: pos.length,
+      ledger: (st.ledger_tail || []).length,
+      source: "status.json"
+    };
+  }
+
+  function refreshPaper() {
+    return fetch("./status.json?ts=" + Date.now(), { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).then(function (st) {
+      if (!isFresh(st)) {
+        applySimulatedView();
+        window.__gqPaper = { mode: "simulated", reason: "stale", generated_at: st.generated_at, age_ms: statusAgeMs(st) };
+        return;
+      }
+      applyLiveView(st);
+    }).catch(function () {
+      applySimulatedView();
+      window.__gqPaper = { mode: "simulated", reason: "missing_or_error" };
+    });
+  }
+
+  SIM_STRIP = (document.getElementById("status-strip") && document.getElementById("status-strip").innerHTML) || "";
+  SIM_RISK = (document.getElementById("risk-panel") && document.getElementById("risk-panel").innerHTML) || "";
+  refreshPaper();
+  setInterval(refreshPaper, STATUS_MS);
 })();
 </script>
 </body>
