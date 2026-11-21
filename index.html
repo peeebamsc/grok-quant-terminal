@@ -270,7 +270,7 @@
       <div class="logo">GQ</div>
       <div>
         <h1>GROK QUANT Paper Terminal</h1>
-        <p>MVP agents 00 · 06 · 07 · 08 · 11 &nbsp;·&nbsp; BTC-USD public market data &nbsp;·&nbsp; pods A–C, positions, traffic, and ledger are SIMULATED</p>
+        <p id="subline">MVP agents 00 · 06 · 07 · 08 · 11 &nbsp;·&nbsp; BTC-USD public market data &nbsp;·&nbsp; pods A–C, positions, traffic, and ledger are SIMULATED</p>
       </div>
     </div>
     <div class="clockbox">
@@ -1205,6 +1205,10 @@ window.addEventListener("unhandledrejection", function (e) {
     setFlag(true, "STATUS FEED UNAVAILABLE · SHOWING SIMULATED");
     var pill = document.getElementById("pill-mode");
     if (pill) pill.textContent = "PODS SIMULATED";
+    var sub = document.getElementById("subline");
+    if (sub) sub.innerHTML = "MVP agents 00 · 06 · 07 · 08 · 11 &nbsp;·&nbsp; BTC-USD public market data &nbsp;·&nbsp; pods A–C, positions, traffic, and ledger are SIMULATED";
+    var titleEl = document.querySelector("title");
+    if (titleEl) titleEl.textContent = "GROK QUANT — Paper Terminal (SIMULATED)";
     var strip = document.getElementById("status-strip");
     if (strip && SIM_STRIP) {
       strip.innerHTML = SIM_STRIP;
@@ -1235,6 +1239,10 @@ window.addEventListener("unhandledrejection", function (e) {
     setFlag(false, "");
     var pill = document.getElementById("pill-mode");
     if (pill) pill.textContent = "PAPER LEDGER";
+    var sub = document.getElementById("subline");
+    if (sub) sub.textContent = "MVP agents 00 · 06 · 07 · 08 · 11 UNAVAILABLE (no heartbeat) · BTC-USD public market data live · books from the paper ledger";
+    var titleEl = document.querySelector("title");
+    if (titleEl) titleEl.textContent = "GROK QUANT — Paper Terminal";
     var hint = document.getElementById("hint");
     if (hint) hint.textContent = "Drag to orbit · scroll to zoom · real paper-book pillars · MVP agents UNAVAILABLE (no heartbeat)";
     var demo = document.getElementById("demo-toggle");
@@ -1351,7 +1359,7 @@ window.addEventListener("unhandledrejection", function (e) {
       "<div>" +
       '<div class="label"><span>Risk limits</span><span class="tag keepcase" id="risk-tag">VERIFIED · paper ledger</span></div>' +
       '<div class="risk-rows" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">' +
-      '<div class="rr"><span>Per trade</span><span>' + (risk.per_trade_pct != null ? risk.per_trade_pct + "% of equity" : "—") + (risk.per_trade_rule ? " · " + risk.per_trade_rule : "") + "</span></div>" +
+      '<div class="rr" title="' + (risk.per_trade_rule || "") + '"><span>Per trade</span><span>' + (risk.per_trade_pct != null ? risk.per_trade_pct + "% / $" + (risk.per_trade_usd != null ? risk.per_trade_usd : "") : "—") + "</span></div>" +
       '<div class="rr"><span>Daily loss cap</span><span>' + (risk.daily_loss_pct != null ? risk.daily_loss_pct + "%" : "—") + "</span></div>" +
       '<div class="rr"><span>Weekly loss cap</span><span>' + (risk.weekly_loss_pct != null ? risk.weekly_loss_pct + "%" : "—") + "</span></div>" +
       '<div class="rr"><span>Drawdown kill</span><span>' + (risk.dd_kill_pct != null ? risk.dd_kill_pct + "% · owner-reset" : "—") + "</span></div>" +
